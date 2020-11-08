@@ -10,7 +10,7 @@ const registerValidator = [
     body('confirmPassword', 'Password confirmation required').notEmpty(),
     body('confirmPassword', 'Passwords do not match').custom(
         (value, { req }) => {
-            if (value !== req.body.confirmPassword) {
+            if (value !== req.body.password) {
                 throw new Error("Passwords don't match");
             } else {
                 return value;
