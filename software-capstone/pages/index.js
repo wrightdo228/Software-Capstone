@@ -1,10 +1,9 @@
 import Head from 'next/head';
-import styles from '../styles/Home.module.css';
 
 const Home = () => (
-    <div className={styles.container}>
+    <div>
         <Head>
-            <title>Create Next App</title>
+            <title>Donneil's Capstone</title>
             <link rel="icon" href="/favicon.ico" />
         </Head>
     </div>
