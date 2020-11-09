@@ -2,9 +2,8 @@
 
 html,
 body {
-  padding: 0;
-  margin: 0;
   font-family: Roboto, sans-serif;
+  background-color: #f7f7f7;
 }
 
 a {
@@ -13,7 +12,14 @@ a {
 }
 
 * {
+  margin: 0;
+  padding: 0;
   box-sizing: border-box;
+}
+
+.username {
+  font-weight: 700;
+  color: #0092e4;
 }
 
 input {
