@@ -27,6 +27,7 @@ const connectToDb = async () => {
 
 const prepareApp = async () => {
     const app = express();
+    console.log(process.env.random);
 
     // app.use(favicon('path', options));
     app.use(bodyParser.json());
