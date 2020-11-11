@@ -10,10 +10,16 @@ const postSchema = new Schema({
     },
     postBody: {
         type: String,
-        trim: true,
         required: 'Please supply a body for your post',
     },
-    codeSandboxId: {},
+    codeSandboxId: {
+        type: String,
+    },
+    createdAt: { type: Date, default: Date.now },
+    user: {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+    },
 });
 
 module.exports = mongoose.model('Post', postSchema);

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import Router from 'next/router';
 
 const RegisterForm = styled.form`
     max-width: 700px;
@@ -21,6 +22,10 @@ const RegisterForm = styled.form`
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [{ isError, message }, setErrorState] = useState({
+        isError: false,
+        message: '',
+    });
 
     const handleSubmit = async (event) => {
         event.preventDefault();
@@ -28,22 +33,32 @@ const Login = () => {
         const response = await fetch('/api/authentication/login', {
             body: JSON.stringify({ email, password }),
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'content-type': 'application/json',
             },
         });
 
         if (response.ok) {
-            console.log(response);
-            console.log('Logged in');
+            Router.push('/');
+        } else if (response.status === 401) {
+            setErrorState({
+                isError: true,
+                message: 'Unable to find a user with those credentials',
+            });
         } else {
-            console.log('Could not log in');
+            setErrorState({
+                isError: true,
+                message: 'Error logging in',
+            });
         }
     };
 
     return (
         <div>
             <RegisterForm onSubmit={handleSubmit}>
+                {isError && <p>{message}</p>}
+
                 <label htmlFor="email">
                     Email
                     <input

@@ -1,48 +1,58 @@
 const express = require('express');
 // const favicon = require('serve-favicon');
 const next = require('next');
+const passport = require('passport');
 const bodyParser = require('body-parser');
+require('../models/Post');
+require('../models/User');
+require('./handlers/passport');
 const mongoose = require('mongoose');
 const session = require('express-session');
-const flash = require('connect-flash');
+const MongoStore = require('connect-mongo')(session);
+const cookieParser = require('cookie-parser');
 const db = require('../config/keys').atlasUri;
-require('../models/User');
 const userRoutes = require('./routes/userRoutes');
-require('./handlers/passport');
 const authRoutes = require('./routes/authRoutes');
 
 const PORT = process.env.PORT || 3000;
-const dev = process.env.NODE_DEV !== 'production';
+const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
+const daysInMilliseconds = 1000 * 60 * 30;
 
 const connectToDb = async () => {
-    await mongoose.connect(db, {
+    const database = await mongoose.connect(db, {
         useUnifiedTopology: true,
         useNewUrlParser: true,
     });
+    console.log('Connected to database');
 
-    console.log('connected to database');
+    return database;
 };
 
 const prepareApp = async () => {
     const app = express();
-    console.log(process.env.random);
-
+    const database = await connectToDb();
     // app.use(favicon('path', options));
+
     app.use(bodyParser.json());
+    app.use(bodyParser.urlencoded({ extended: false }));
+    app.use(cookieParser());
     app.use(
         session({
-            cookie: { maxAge: 60000 },
+            cookie: { maxAge: daysInMilliseconds },
             secret: 'woot',
             resave: false,
             saveUninitialized: false,
+            store: new MongoStore({
+                mongooseConnection: database.connection,
+            }),
         }),
     );
+    app.use(passport.initialize());
+    app.use(passport.session());
     await nextApp.prepare();
-    await connectToDb();
 
-    app.use(flash());
     app.use('/api/user', userRoutes);
     app.use('/api/authentication', authRoutes);
 
