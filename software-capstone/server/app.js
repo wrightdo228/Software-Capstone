@@ -13,6 +13,7 @@ const cookieParser = require('cookie-parser');
 const db = require('../config/keys').atlasUri;
 const userRoutes = require('./routes/userRoutes');
 const authRoutes = require('./routes/authRoutes');
+const postRoutes = require('./routes/postRoutes');
 
 const PORT = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -55,6 +56,7 @@ const prepareApp = async () => {
 
     app.use('/api/user', userRoutes);
     app.use('/api/authentication', authRoutes);
+    app.use('/api/post', postRoutes);
 
     // app.get('/post/:id/:title', (req, res) =>
     //     nextApp.render(req, res, '/post', {

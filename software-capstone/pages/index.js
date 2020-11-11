@@ -30,10 +30,23 @@ const Home = () => {
         await fetch('/api/authentication/logout');
     };
 
+    const post = async () => {
+        await fetch('/api/post', {
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+    };
+
     return (
         <div>
             <button type="button" onClick={logout}>
                 logout
+            </button>
+            <button type="button" onClick={post}>
+                post
             </button>
             <Head>
                 <title>Donneil's Capstone</title>
