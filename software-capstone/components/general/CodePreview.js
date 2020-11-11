@@ -5,6 +5,8 @@ const IFrame = styled.iframe`
     width: 100%;
     height: 370px;
     margin-top: 14px;
+    border: 1px solid #000;
+    border-radius: 10px;
 `;
 
 const CodePreview = ({ mode }) => (

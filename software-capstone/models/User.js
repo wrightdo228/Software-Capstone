@@ -5,6 +5,8 @@ const md5 = require('md5');
 const validator = require('validator');
 const passportLocalMongoose = require('passport-local-mongoose');
 
+const Post = mongoose.model('Post');
+
 const userSchema = new Schema({
     email: {
         type: String,
@@ -20,6 +22,13 @@ const userSchema = new Schema({
         trim: true,
         required: 'Please supply a username',
     },
+    createdAt: { type: Date, default: Date.now },
+    posts: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Post',
+        },
+    ],
 });
 
 userSchema.plugin(passportLocalMongoose, { usernameField: 'email' });

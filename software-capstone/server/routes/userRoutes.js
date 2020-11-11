@@ -28,7 +28,7 @@ router.post('/', registerValidator, async (req, res, next) => {
         res.status(500).send();
     }
 
-    res.status(200).json(user).send();
+    res.status(200).json().send();
 });
 
 module.exports = router;

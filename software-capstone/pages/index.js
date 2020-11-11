@@ -25,20 +25,29 @@ const Posts = styled.div`
     }
 `;
 
-const Home = () => (
-    <div>
-        <Head>
-            <title>Donneil's Capstone</title>
-            <link rel="icon" href="/favicon.ico" />
-        </Head>
-        <Container>
-            <UserCard />
-            <Posts>
-                <Post />
-                <Post />
-            </Posts>
-        </Container>
-    </div>
-);
+const Home = () => {
+    const logout = async () => {
+        await fetch('/api/authentication/logout');
+    };
+
+    return (
+        <div>
+            <button type="button" onClick={logout}>
+                logout
+            </button>
+            <Head>
+                <title>Donneil's Capstone</title>
+                <link rel="icon" href="/favicon.ico" />
+            </Head>
+            <Container>
+                <UserCard />
+                <Posts>
+                    <Post />
+                    <Post />
+                </Posts>
+            </Container>
+        </div>
+    );
+};
 
 export default Home;
