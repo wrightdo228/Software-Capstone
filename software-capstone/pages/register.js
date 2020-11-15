@@ -29,7 +29,7 @@ const Register = () => {
     const handleSubmit = async (event) => {
         event.preventDefault();
 
-        const response = await fetch('/api/user', {
+        const response = await fetch('/api/account', {
             body: JSON.stringify(formState),
             method: 'POST',
             headers: {

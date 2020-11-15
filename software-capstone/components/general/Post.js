@@ -21,7 +21,7 @@ const LeftSide = styled.div`
     }
 
     .post-avatar {
-        margin-bottom: 14px;
+        margin-bottom: 10px;
     }
 `;
 

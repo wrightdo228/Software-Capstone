@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import Link from 'next/link';
+import PropTypes from 'prop-types';
 import UserInfoSection from './UserInfoSection';
 import UserCardSection from './UserCardSection';
 import Icon from '../buttons/Icon';
@@ -31,15 +32,14 @@ const userInfo = {
     favorites: 50,
     collections: 5,
     following: 20,
-    username: 'NoobCoder77',
 };
 
-const UserCard = () => (
+const UserCard = ({ openCreatePost, user }) => (
     <Container className="user-card">
         <UserInfoSection
             followerCount={userInfo.followers}
             followingCount={userInfo.following}
-            username={userInfo.username}
+            username={user.username}
         />
         <UserCardSection>
             <Link href="#">
@@ -57,11 +57,16 @@ const UserCard = () => (
                 </a>
             </Link>
         </UserCardSection>
-        <UserCardSection>
+        <UserCardSection onClick={openCreatePost}>
             <Icon type="new" />
             <p>New Post</p>
         </UserCardSection>
     </Container>
 );
+
+UserCard.propTypes = {
+    openCreatePost: PropTypes.func,
+    user: PropTypes.object.isRequired,
+};
 
 export default UserCard;

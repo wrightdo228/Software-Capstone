@@ -3,6 +3,7 @@ const express = require('express');
 const next = require('next');
 const passport = require('passport');
 const bodyParser = require('body-parser');
+require('../models/Comment');
 require('../models/Post');
 require('../models/User');
 require('./handlers/passport');
@@ -12,6 +13,7 @@ const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 const db = require('../config/keys').atlasUri;
 const userRoutes = require('./routes/userRoutes');
+const accountRoutes = require('./routes/accountRoutes');
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
 
@@ -54,13 +56,14 @@ const prepareApp = async () => {
     app.use(passport.session());
     await nextApp.prepare();
 
-    app.use('/api/user', userRoutes);
+    app.use('/api/account', accountRoutes);
     app.use('/api/authentication', authRoutes);
     app.use('/api/post', postRoutes);
+    app.use('/api/user', userRoutes);
 
-    // app.get('/post/:id/:title', (req, res) =>
-    //     nextApp.render(req, res, '/post', {
-    //         slug: req.params.slug,
+    // app.get('/:username', (req, res) =>
+    //     nextApp.render(req, res, '/', {
+    //         username: req.params.username,
     //     })
     // );
 

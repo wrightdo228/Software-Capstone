@@ -1,11 +1,8 @@
 const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
-const md5 = require('md5');
 const validator = require('validator');
 const passportLocalMongoose = require('passport-local-mongoose');
-
-const Post = mongoose.model('Post');
 
 const userSchema = new Schema({
     email: {
@@ -27,6 +24,24 @@ const userSchema = new Schema({
         {
             type: Schema.Types.ObjectId,
             ref: 'Post',
+        },
+    ],
+    comments: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Comment',
+        },
+    ],
+    favorites: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Favorite',
+        },
+    ],
+    reposts: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'Repost',
         },
     ],
 });
