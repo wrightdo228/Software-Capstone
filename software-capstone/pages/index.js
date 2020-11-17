@@ -29,12 +29,8 @@ const Posts = styled.div`
     }
 `;
 
-const Home = ({ user }) => {
+const Home = ({ user, posts }) => {
     const [createPostOpen, setCreatePostOpen] = useState(false);
-
-    const logout = async () => {
-        await fetch('/api/authentication/logout');
-    };
 
     return (
         <div>
@@ -54,8 +50,9 @@ const Home = ({ user }) => {
                     openCreatePost={() => setCreatePostOpen(true)}
                 />
                 <Posts>
-                    <Post />
-                    <Post />
+                    {posts.map((post) => (
+                        <Post post={post} key={post._id} />
+                    ))}
                 </Posts>
             </Container>
         </div>
@@ -64,20 +61,29 @@ const Home = ({ user }) => {
 
 Home.propTypes = {
     user: PropTypes.object.isRequired,
+    posts: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 Home.getInitialProps = async ({ req }) => {
-    const props = { success: false, user: {} };
+    const props = { success: false, user: {}, posts: [] };
     const response = await fetch(`http://localhost:3000/api/user`, {
         credentials: 'include',
         headers: req ? { cookie: req.headers.cookie } : undefined,
     });
 
+    const feedResponse = await fetch(
+        `http://localhost:3000/api/post/main-feed`,
+        {
+            credentials: 'include',
+            headers: req ? { cookie: req.headers.cookie } : undefined,
+        },
+    );
+
     if (response.ok) {
         const jsonObject = await response.json();
         props.success = true;
         props.user = jsonObject;
-
+        props.posts = await feedResponse.json();
         return props;
     }
 

@@ -26,12 +26,6 @@ const userSchema = new Schema({
             ref: 'Post',
         },
     ],
-    comments: [
-        {
-            type: Schema.Types.ObjectId,
-            ref: 'Comment',
-        },
-    ],
     favorites: [
         {
             type: Schema.Types.ObjectId,

@@ -61,6 +61,12 @@ router.post('/', authenticate, async (req, res) => {
     }
 });
 
+router.get('/main-feed', authenticate, async (req, res) => {
+    const posts = await Post.find();
+
+    res.json(posts).send();
+});
+
 router.post('/repost', authenticate, async (req, res) => {
     const { postId } = req;
 
@@ -73,7 +79,39 @@ router.post('/repost', authenticate, async (req, res) => {
     await repost.save();
 });
 
-router.post('/favorite', authenticate, async (req, res) => {});
+router.post('/favorite', authenticate, async (req, res, next) => {
+    try {
+        const { postId } = req.body;
+
+        const post = await Post.findById(postId);
+
+        if (!post) {
+            res.status(404).statusMessage = 'No post could be found';
+            res.send();
+            next();
+        }
+
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            res.status(404).statusMessage = 'No user could be found';
+            res.send();
+            next();
+        }
+
+        const newFavorite = new Favorite();
+        newFavorite.post = post;
+        newFavorite.user = user;
+        const favorite = await newFavorite.save();
+
+        user.favorites.push(favorite);
+        await user.save();
+
+        res.status(200).send();
+    } catch {
+        res.status(500).send();
+    }
+});
 
 router.get('/', authenticate, async (req, res) => {});
 
