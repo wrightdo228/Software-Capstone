@@ -36,12 +36,12 @@ router.post('/', authenticate, async (req, res) => {
         });
 
         if (sandboxLink) {
-            const sandboxId = getSandboxId(sandboxLink);
+            const codeSandboxId = getSandboxId(sandboxLink);
 
-            if (sandboxId) {
-                newPost.sandboxId = sandboxId;
+            if (codeSandboxId) {
+                newPost.codeSandboxId = codeSandboxId;
             } else {
-                res.status(400).send();
+                return res.status(400).send();
             }
         }
 
@@ -62,7 +62,33 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 router.get('/main-feed', authenticate, async (req, res) => {
-    const posts = await Post.find();
+    const user = await User.findById(req.user._id);
+    const following = [...user.following, user._id];
+
+    const posts = await Post.find({
+        user: {
+            $in: following,
+        },
+    })
+        .populate(
+            'user',
+            '-posts -favorites -reposts -email -createdAt -__v -_id',
+        )
+        .sort({ createdAt: -1 });
+
+    res.json(posts).send();
+});
+
+router.get('/user-feed/:username', authenticate, async (req, res) => {
+    const { username } = req.params;
+    const user = await User.findOne({ username });
+
+    const posts = await Post.find({ user })
+        .populate(
+            'user',
+            '-posts -favorites -reposts -email -createdAt -__v -_id',
+        )
+        .sort({ createdAt: -1 });
 
     res.json(posts).send();
 });
@@ -79,7 +105,9 @@ router.post('/repost', authenticate, async (req, res) => {
     await repost.save();
 });
 
-router.post('/favorite', authenticate, async (req, res, next) => {
+router.delete('/repost', authenticate, async (req, res) => {});
+
+router.post('/favorite', authenticate, async (req, res) => {
     try {
         const { postId } = req.body;
 
@@ -87,16 +115,14 @@ router.post('/favorite', authenticate, async (req, res, next) => {
 
         if (!post) {
             res.status(404).statusMessage = 'No post could be found';
-            res.send();
-            next();
+            return res.send();
         }
 
         const user = await User.findById(req.user._id);
 
         if (!user) {
             res.status(404).statusMessage = 'No user could be found';
-            res.send();
-            next();
+            return res.send();
         }
 
         const newFavorite = new Favorite();
@@ -112,6 +138,8 @@ router.post('/favorite', authenticate, async (req, res, next) => {
         res.status(500).send();
     }
 });
+
+router.delete('/favorite', authenticate, async (req, res, next) => {});
 
 router.get('/', authenticate, async (req, res) => {});
 

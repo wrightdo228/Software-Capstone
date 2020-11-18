@@ -22,7 +22,23 @@ const PORT = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
-const daysInMilliseconds = 1000 * 60 * 30;
+const daysInMilliseconds = 1000 * 60 * 60 * 24 * 30; // 30 days
+
+const checkNotAuthenticated = (req, res, next) => {
+    if (!req.isAuthenticated()) {
+        next();
+    } else {
+        res.redirect('/');
+    }
+};
+
+const checkAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+};
 
 const connectToDb = async () => {
     const database = await mongoose.connect(db, {
@@ -62,11 +78,23 @@ const prepareApp = async () => {
     app.use('/api/post', postRoutes);
     app.use('/api/user', userRoutes);
 
-    // app.get('/:username', (req, res) =>
-    //     nextApp.render(req, res, '/', {
-    //         username: req.params.username,
-    //     })
-    // );
+    app.get('/', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/'),
+    );
+
+    app.get('/user/:username', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/user', {
+            username: req.params.username,
+        }),
+    );
+
+    app.get('/login', checkNotAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/login'),
+    );
+
+    app.get('/register', checkNotAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/register'),
+    );
 
     app.get('*', (req, res) => handle(req, res));
 

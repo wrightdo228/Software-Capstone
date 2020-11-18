@@ -38,6 +38,8 @@ const userSchema = new Schema({
             ref: 'Repost',
         },
     ],
+    following: [{ type: Schema.ObjectId, ref: 'User' }],
+    followers: [{ type: Schema.ObjectId, ref: 'User' }],
 });
 
 userSchema.plugin(passportLocalMongoose, { usernameField: 'email' });

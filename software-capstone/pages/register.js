@@ -6,7 +6,8 @@ const RegisterForm = styled.form`
     border-radius: 10px;
     padding: 32px 117px;
     border: 1px solid #c4c4c4;
-    margin: 0 auto;
+    margin: 75px auto 0 auto;
+    background-color: #fff;
 
     label {
         margin-bottom: 36px;

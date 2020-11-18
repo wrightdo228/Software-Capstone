@@ -2,12 +2,13 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import Router from 'next/router';
 
-const RegisterForm = styled.form`
+const LoginForm = styled.form`
     max-width: 700px;
     border-radius: 10px;
     padding: 32px 117px;
     border: 1px solid #c4c4c4;
-    margin: 0 auto;
+    margin: 75px auto 0 auto;
+    background-color: #fff;
 
     label {
         margin-bottom: 36px;
@@ -56,7 +57,7 @@ const Login = () => {
 
     return (
         <div>
-            <RegisterForm onSubmit={handleSubmit}>
+            <LoginForm onSubmit={handleSubmit}>
                 {isError && <p>{message}</p>}
 
                 <label htmlFor="email">
@@ -75,12 +76,12 @@ const Login = () => {
                         id="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        type="text"
+                        type="password"
                         required
                     />
                 </label>
                 <button type="submit">Login</button>
-            </RegisterForm>
+            </LoginForm>
         </div>
     );
 };
