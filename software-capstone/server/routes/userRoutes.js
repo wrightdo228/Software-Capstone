@@ -1,34 +1,85 @@
 const mongoose = require('mongoose');
 const express = require('express');
-const { validationResult } = require('express-validator');
-const { promisify } = require('es6-promisify');
-const registerValidator = require('../middleware/registerValidator');
+const authenticate = require('../middleware/authenticate');
 
 const User = mongoose.model('User');
 
 const router = express.Router();
 
-router.post('/', registerValidator, async (req, res, next) => {
-    const errors = validationResult(req);
+const getReducedUser = (user, req) => ({
+    id: user._id,
+    username: user.username,
+    followerCount: user.followers.length,
+    followingCount: user.following.length,
+    favoriteCount: user.favorites.length,
+    collectionCount: 5,
+    ownAccount: user._id.equals(req.user._id),
+    following: user.followers.includes(req.user._id),
+});
 
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
+router.get('/', authenticate, async (req, res) => {
+    const user = await User.findById(req.user._id);
+
+    const reducedUser = getReducedUser(user, req);
+
+    res.status(200).json(reducedUser).send();
+});
+
+router.get('/:username', authenticate, async (req, res) => {
+    const user = await User.findOne({ username: req.params.username });
+
+    const reducedUser = getReducedUser(user, req);
+
+    res.status(200).json(reducedUser).send();
+});
+
+router.post('/follow/:userId', authenticate, async (req, res) => {
+    const user = await User.findById(req.params.userId);
+
+    if (user._id.equals(req.user._id)) {
+        res.status(400).statusMessage = 'Cannot follow yourself';
+        return res.send();
     }
 
-    const user = new User({
-        email: req.body.email,
-        username: req.body.username,
-    });
+    const follower = await User.findById(req.user._id);
 
-    const register = promisify(User.register.bind(User));
+    if (user.followers.includes(follower._id)) {
+        res.status(400).statusMessage = 'Already following this user';
+        return res.send();
+    }
 
+    user.followers.push(follower);
+    const savedUser = await user.save();
+
+    follower.following.push(savedUser);
+    await follower.save();
+
+    res.status(200).send();
+});
+
+router.delete('/follow/:userId', authenticate, async (req, res) => {
     try {
-        await register(user, req.body.password);
-    } catch (error) {
-        res.status(500).send();
+        const follower = await User.findById(req.user._id);
+
+        const user = await User.findOneAndUpdate(
+            { _id: req.params.userId },
+            {
+                $pull: { followers: follower._id },
+            },
+        );
+
+        await User.findByIdAndUpdate(
+            { _id: req.user._id },
+            {
+                $pull: { following: user._id },
+            },
+        );
+    } catch {
+        res.status(500).statusMessage = 'Issue while updating';
+        return res.send();
     }
 
-    res.status(200).json().send();
+    res.status(200).send();
 });
 
 module.exports = router;

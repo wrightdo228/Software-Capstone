@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import Link from 'next/link';
+import PropTypes from 'prop-types';
+import { useState } from 'react';
 import UserInfoSection from './UserInfoSection';
 import UserCardSection from './UserCardSection';
 import Icon from '../buttons/Icon';
@@ -26,42 +28,72 @@ const Container = styled.div`
     }
 `;
 
-const userInfo = {
-    followers: 100,
-    favorites: 50,
-    collections: 5,
-    following: 20,
-    username: 'NoobCoder77',
+const UserCard = ({ openCreatePost, user }) => {
+    const [following, setFollowing] = useState(user.following);
+
+    const followRequest = async (method) => {
+        const response = await fetch(`/api/user/follow/${user.id}`, {
+            method,
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            setFollowing(!following);
+        } else {
+            console.log('could not follow');
+        }
+    };
+
+    return (
+        <Container className="user-card">
+            <UserInfoSection
+                followerCount={user.followerCount}
+                followingCount={user.followingCount}
+                username={user.username}
+            />
+            <UserCardSection>
+                <Link href="#">
+                    <a>
+                        <Icon type="favorite" />
+                        <p>Favorites ({user.favoriteCount})</p>
+                    </a>
+                </Link>
+            </UserCardSection>
+            <UserCardSection>
+                <Link href="#">
+                    <a>
+                        <Icon type="collection" />
+                        <p>Collections ({user.collectionCount})</p>
+                    </a>
+                </Link>
+            </UserCardSection>
+            {user.ownAccount ? (
+                <UserCardSection onClick={openCreatePost}>
+                    <Icon type="new" />
+                    <p>New Post</p>
+                </UserCardSection>
+            ) : (
+                <UserCardSection
+                    onClick={
+                        following
+                            ? () => followRequest('DELETE')
+                            : () => followRequest('POST')
+                    }
+                >
+                    <Icon type="follow" />
+                    <p>{following ? 'Following' : 'Follow'}</p>
+                </UserCardSection>
+            )}
+        </Container>
+    );
 };
 
-const UserCard = () => (
-    <Container className="user-card">
-        <UserInfoSection
-            followerCount={userInfo.followers}
-            followingCount={userInfo.following}
-            username={userInfo.username}
-        />
-        <UserCardSection>
-            <Link href="#">
-                <a>
-                    <Icon type="favorite" />
-                    <p>Favorites ({userInfo.favorites})</p>
-                </a>
-            </Link>
-        </UserCardSection>
-        <UserCardSection>
-            <Link href="#">
-                <a>
-                    <Icon type="collection" />
-                    <p>Collections ({userInfo.collections})</p>
-                </a>
-            </Link>
-        </UserCardSection>
-        <UserCardSection>
-            <Icon type="new" />
-            <p>New Post</p>
-        </UserCardSection>
-    </Container>
-);
+UserCard.propTypes = {
+    openCreatePost: PropTypes.func,
+    user: PropTypes.object.isRequired,
+};
 
 export default UserCard;

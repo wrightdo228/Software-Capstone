@@ -28,13 +28,16 @@ const Container = styled.div`
     }
 `;
 
-const UserCardSection = ({ children }) => <Container>{children}</Container>;
+const UserCardSection = ({ children, onClick }) => (
+    <Container onClick={onClick}>{children}</Container>
+);
 
 UserCardSection.propTypes = {
     children: PropTypes.oneOfType([
         PropTypes.node,
         PropTypes.arrayOf(PropTypes.node),
     ]),
+    onClick: PropTypes.func,
 };
 
 export default UserCardSection;

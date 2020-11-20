@@ -4,7 +4,9 @@ const next = require('next');
 const passport = require('passport');
 const bodyParser = require('body-parser');
 require('../models/Post');
+require('../models/Repost');
 require('../models/User');
+require('../models/Favorite');
 require('./handlers/passport');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -12,13 +14,31 @@ const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
 const db = require('../config/keys').atlasUri;
 const userRoutes = require('./routes/userRoutes');
+const accountRoutes = require('./routes/accountRoutes');
 const authRoutes = require('./routes/authRoutes');
+const postRoutes = require('./routes/postRoutes');
 
 const PORT = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
 const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
-const daysInMilliseconds = 1000 * 60 * 30;
+const daysInMilliseconds = 1000 * 60 * 60 * 24 * 30; // 30 days
+
+const checkNotAuthenticated = (req, res, next) => {
+    if (!req.isAuthenticated()) {
+        next();
+    } else {
+        res.redirect('/');
+    }
+};
+
+const checkAuthenticated = (req, res, next) => {
+    if (req.isAuthenticated()) {
+        next();
+    } else {
+        res.redirect('/login');
+    }
+};
 
 const connectToDb = async () => {
     const database = await mongoose.connect(db, {
@@ -53,14 +73,28 @@ const prepareApp = async () => {
     app.use(passport.session());
     await nextApp.prepare();
 
-    app.use('/api/user', userRoutes);
+    app.use('/api/account', accountRoutes);
     app.use('/api/authentication', authRoutes);
+    app.use('/api/post', postRoutes);
+    app.use('/api/user', userRoutes);
 
-    // app.get('/post/:id/:title', (req, res) =>
-    //     nextApp.render(req, res, '/post', {
-    //         slug: req.params.slug,
-    //     })
-    // );
+    app.get('/', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/'),
+    );
+
+    app.get('/user/:username', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/user', {
+            username: req.params.username,
+        }),
+    );
+
+    app.get('/login', checkNotAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/login'),
+    );
+
+    app.get('/register', checkNotAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/register'),
+    );
 
     app.get('*', (req, res) => handle(req, res));
 

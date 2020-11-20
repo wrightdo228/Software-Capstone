@@ -19,6 +19,24 @@ const Icon = ({ type }) => {
         </svg>
     );
 
+    const follow = (
+        <svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                fillRule="evenodd"
+                clipRule="evenodd"
+                d="M6 0H18C19.1 0 20 0.89999 20 2V14C20 15.1 19.1 16 18 16H6C4.90002 16 4 15.1 4 14V2C4 0.89999 4.90002 0 6 0ZM0 4H2V18H16V20H2C0.90002 20 0 19.1 0 18V4ZM18 14H6V2H18V14ZM13 12H11V9H8V7H11V4H13V7H16V9H13V12Z"
+                fill="#A81010"
+                fillOpacity="0.54"
+            />
+        </svg>
+    );
+
     const newPost = (
         <svg
             width="24"
@@ -52,6 +70,22 @@ const Icon = ({ type }) => {
         </svg>
     );
 
+    const reply = (
+        <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+        >
+            <path
+                d="M10 8.5V4.5L3 11.5L10 18.5V14.4C15 14.4 18.5 16 21 19.5C20 14.5 17 9.5 10 8.5Z"
+                fill="black"
+                fillOpacity="0.54"
+            />
+        </svg>
+    );
+
     const selectedIcon = (() => {
         switch (type) {
             case 'favorite':
@@ -60,6 +94,10 @@ const Icon = ({ type }) => {
                 return newPost;
             case 'collection':
                 return collection;
+            case 'reply':
+                return reply;
+            case 'follow':
+                return follow;
             default:
                 return favorite;
         }
@@ -69,7 +107,7 @@ const Icon = ({ type }) => {
 };
 
 Icon.propTypes = {
-    type: PropTypes.oneOf(['favorite', 'collection', 'new']),
+    type: PropTypes.oneOf(['favorite', 'collection', 'new', 'reply', 'follow']),
 };
 
 export default Icon;

@@ -2,15 +2,11 @@ import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import Icon from './Icon';
 
-const Button = styled.button`
+const Button = styled.span`
     cursor: pointer;
-    background-color: transparent;
-    padding: 0;
 
-    & svg {
-        &:hover {
-            fill: #a81010;
-        }
+    &:hover svg {
+        fill: #a81010;
     }
 `;
 
@@ -21,7 +17,7 @@ const IconButton = ({ type, onClick }) => (
 );
 
 IconButton.propTypes = {
-    type: PropTypes.oneOf(['favorite', 'collection', 'new']),
+    type: PropTypes.oneOf(['favorite', 'collection', 'new', 'reply']),
     onClick: PropTypes.func,
 };
 

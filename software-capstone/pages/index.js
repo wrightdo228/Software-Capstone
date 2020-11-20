@@ -1,53 +1,48 @@
 import Head from 'next/head';
-import styled from 'styled-components';
-import UserCard from '../components/general/UserCard';
-import Post from '../components/general/Post';
+import fetch from 'isomorphic-unfetch';
+import PropTypes from 'prop-types';
+import Timeline from '../components/posts/Timeline';
 
-const Container = styled.div`
-    display: flex;
-    align-items: start;
-    padding: 75px 108px;
+const Home = ({ user, posts }) => (
+    <div>
+        <Head>
+            <title>Donneil's Capstone</title>
+            <link rel="icon" href="/favicon.ico" />
+        </Head>
+        <Timeline posts={posts} user={user} />
+    </div>
+);
 
-    .user-card {
-        margin-right: 70px;
-    }
-`;
+Home.propTypes = {
+    user: PropTypes.object.isRequired,
+    posts: PropTypes.arrayOf(PropTypes.object).isRequired,
+};
 
-const Posts = styled.div`
-    flex-grow: 1;
+Home.getInitialProps = async ({ req }) => {
+    const props = { success: false, user: {}, posts: [] };
 
-    > div {
-        margin-bottom: 65px;
-    }
+    const response = await fetch(`http://localhost:3000/api/user`, {
+        credentials: 'include',
+        headers: req ? { cookie: req.headers.cookie } : undefined,
+    });
 
-    > div:last-child {
-        margin-bottom: 0;
-    }
-`;
-
-const Home = () => {
-    const logout = async () => {
-        await fetch('/api/authentication/logout');
-    };
-
-    return (
-        <div>
-            <button type="button" onClick={logout}>
-                logout
-            </button>
-            <Head>
-                <title>Donneil's Capstone</title>
-                <link rel="icon" href="/favicon.ico" />
-            </Head>
-            <Container>
-                <UserCard />
-                <Posts>
-                    <Post />
-                    <Post />
-                </Posts>
-            </Container>
-        </div>
+    const feedResponse = await fetch(
+        `http://localhost:3000/api/post/main-feed`,
+        {
+            credentials: 'include',
+            headers: req ? { cookie: req.headers.cookie } : undefined,
+        },
     );
+
+    if (response.ok) {
+        const jsonObject = await response.json();
+        props.success = true;
+        props.user = jsonObject;
+        props.posts = await feedResponse.json();
+        return props;
+    }
+
+    return {};
 };
 
 export default Home;
