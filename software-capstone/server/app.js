@@ -1,5 +1,6 @@
 const express = require('express');
 // const favicon = require('serve-favicon');
+require('dotenv').config();
 const next = require('next');
 const passport = require('passport');
 const bodyParser = require('body-parser');
@@ -12,7 +13,6 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo')(session);
 const cookieParser = require('cookie-parser');
-const db = require('../config/keys').atlasUri;
 const userRoutes = require('./routes/userRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const authRoutes = require('./routes/authRoutes');
@@ -41,7 +41,7 @@ const checkAuthenticated = (req, res, next) => {
 };
 
 const connectToDb = async () => {
-    const database = await mongoose.connect(db, {
+    const database = await mongoose.connect(process.env.ATLAS_URI, {
         useUnifiedTopology: true,
         useNewUrlParser: true,
     });
@@ -61,7 +61,7 @@ const prepareApp = async () => {
     app.use(
         session({
             cookie: { maxAge: daysInMilliseconds },
-            secret: 'woot',
+            secret: process.env.COOKIE_SECRET,
             resave: false,
             saveUninitialized: false,
             store: new MongoStore({

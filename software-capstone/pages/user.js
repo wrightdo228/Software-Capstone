@@ -14,7 +14,7 @@ User.getInitialProps = async ({ query, req }) => {
     const cookie = req ? { cookie: req.headers.cookie } : undefined;
 
     const userResponse = fetch(
-        `http://localhost:3000/api/user/${query.username}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/${query.username}`,
         {
             credentials: 'include',
             headers: cookie,
@@ -22,7 +22,7 @@ User.getInitialProps = async ({ query, req }) => {
     );
 
     const feedResponse = fetch(
-        `http://localhost:3000/api/post/user-feed/${query.username}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/post/user-feed/${query.username}`,
         {
             credentials: 'include',
             headers: cookie,
