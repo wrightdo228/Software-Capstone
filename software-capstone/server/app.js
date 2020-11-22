@@ -20,7 +20,7 @@ const postRoutes = require('./routes/postRoutes');
 
 const PORT = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
-const nextApp = next({ dev, dir: dev ? '../' : '.' });
+const nextApp = next({ dev, dir: dev ? '.' : '../' });
 const handle = nextApp.getRequestHandler();
 const daysInMilliseconds = 1000 * 60 * 60 * 24 * 30; // 30 days
 
@@ -51,6 +51,8 @@ const connectToDb = async () => {
 };
 
 const prepareApp = async () => {
+    console.log('Second Port:', process.env.PORT);
+
     const app = express();
     const database = await connectToDb();
     // app.use(favicon('path', options));
