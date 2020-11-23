@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 import Link from 'next/link';
 import { useState } from 'react';
-import Router from 'next/router';
+import { useRouter } from 'next/router';
 
 const Container = styled.div`
     background-color: #fff;
@@ -50,16 +50,16 @@ const Container = styled.div`
 `;
 
 const Navbar = () => {
+    const router = useRouter();
     const [searchValue, setSearchValue] = useState();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        Router.push({
-            pathname: '/search',
-            query: { searchParams: searchValue },
-            asPath: `/search/${searchValue}`,
-        });
+        router.push(
+            `/search?searchParams=${searchValue}`,
+            `/search/${searchValue}`,
+        );
     };
 
     return (

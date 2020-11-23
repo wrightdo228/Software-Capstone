@@ -22,7 +22,7 @@ router.get('/', authenticate, async (req, res) => {
 
     const reducedUser = getReducedUser(user, req);
 
-    res.status(200).json(reducedUser).send();
+    res.json(reducedUser);
 });
 
 router.get('/:username', authenticate, async (req, res) => {
@@ -30,7 +30,7 @@ router.get('/:username', authenticate, async (req, res) => {
 
     const reducedUser = getReducedUser(user, req);
 
-    res.status(200).json(reducedUser).send();
+    res.json(reducedUser);
 });
 
 router.post('/follow/:userId', authenticate, async (req, res) => {
