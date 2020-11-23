@@ -21,13 +21,16 @@ Home.propTypes = {
 Home.getInitialProps = async ({ req }) => {
     const props = { success: false, user: {}, posts: [] };
 
-    const response = await fetch(`http://localhost:3000/api/user`, {
-        credentials: 'include',
-        headers: req ? { cookie: req.headers.cookie } : undefined,
-    });
+    const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/user`,
+        {
+            credentials: 'include',
+            headers: req ? { cookie: req.headers.cookie } : undefined,
+        },
+    );
 
     const feedResponse = await fetch(
-        `http://localhost:3000/api/post/main-feed`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/post/main-feed`,
         {
             credentials: 'include',
             headers: req ? { cookie: req.headers.cookie } : undefined,
