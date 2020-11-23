@@ -51,8 +51,6 @@ const connectToDb = async () => {
 };
 
 const prepareApp = async () => {
-    console.log('Second Port:', process.env.PORT);
-
     const app = express();
     const database = await connectToDb();
     // app.use(favicon('path', options));
