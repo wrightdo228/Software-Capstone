@@ -1,5 +1,7 @@
 import styled from 'styled-components';
 import Link from 'next/link';
+import { useState } from 'react';
+import Router from 'next/router';
 
 const Container = styled.div`
     background-color: #fff;
@@ -8,7 +10,7 @@ const Container = styled.div`
     position: sticky;
     top: 0;
 
-    input {
+    form {
         width: 50%;
     }
 
@@ -47,24 +49,43 @@ const Container = styled.div`
     }
 `;
 
-const Navbar = () => (
-    <Container>
-        <div id="content">
-            <div id="left-placeholder" />
-            <input />
-            <div id="nav-items">
-                <Link href="/">
-                    <a>Home</a>
-                </Link>
-                <Link href="/featured">
-                    <a>Featured</a>
-                </Link>
-                <Link href="/profile">
-                    <a>Profile</a>
-                </Link>
+const Navbar = () => {
+    const [searchValue, setSearchValue] = useState();
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        Router.push({
+            pathname: '/search',
+            query: { searchParams: searchValue },
+            asPath: `/search/${searchValue}`,
+        });
+    };
+
+    return (
+        <Container>
+            <div id="content">
+                <div id="left-placeholder" />
+                <form onSubmit={handleSubmit}>
+                    <input
+                        value={searchValue}
+                        onChange={(e) => setSearchValue(e.target.value)}
+                    />
+                </form>
+                <div id="nav-items">
+                    <Link href="/">
+                        <a>Home</a>
+                    </Link>
+                    <Link href="/featured">
+                        <a>Featured</a>
+                    </Link>
+                    <Link href="/profile">
+                        <a>Profile</a>
+                    </Link>
+                </div>
             </div>
-        </div>
-    </Container>
-);
+        </Container>
+    );
+};
 
 export default Navbar;

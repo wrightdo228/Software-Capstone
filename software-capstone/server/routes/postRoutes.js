@@ -93,6 +93,30 @@ router.get('/user-feed/:username', authenticate, async (req, res) => {
     res.json(posts).send();
 });
 
+router.get('/search/:searchParams', authenticate, async (req, res) => {
+    const { searchParams } = req.params;
+    const trimmedSearchParams = searchParams.trim();
+
+    const users = await User.find({
+        username: { $regex: trimmedSearchParams, $options: 'i' },
+    });
+
+    const posts = await Post.find({
+        $or: [
+            { title: { $regex: trimmedSearchParams, $options: 'i' } },
+            { postBody: { $regex: trimmedSearchParams, $options: 'i' } },
+            { user: { $in: users } },
+        ],
+    })
+        .populate(
+            'user',
+            '-posts -favorites -reposts -email -createdAt -__v -_id',
+        )
+        .sort({ createdAt: -1 });
+
+    res.json(posts).send();
+});
+
 router.post('/repost', authenticate, async (req, res) => {
     const { postId } = req;
 

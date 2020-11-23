@@ -96,6 +96,12 @@ const prepareApp = async () => {
         }),
     );
 
+    app.get('/search/:searchParams', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/search', {
+            searchParams: req.params.searchParams,
+        }),
+    );
+
     app.get('/login', checkNotAuthenticated, (req, res) =>
         nextApp.render(req, res, '/login'),
     );
