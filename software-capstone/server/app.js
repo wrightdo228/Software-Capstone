@@ -51,8 +51,6 @@ const connectToDb = async () => {
 };
 
 const prepareApp = async () => {
-    console.log('Second Port:', process.env.PORT);
-
     const app = express();
     const database = await connectToDb();
     // app.use(favicon('path', options));
@@ -82,6 +80,14 @@ const prepareApp = async () => {
 
     app.get('/', checkAuthenticated, (req, res) =>
         nextApp.render(req, res, '/'),
+    );
+
+    app.get('/profile', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/profile'),
+    );
+
+    app.get('/featured', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/featured'),
     );
 
     app.get('/user/:username', checkAuthenticated, (req, res) =>
