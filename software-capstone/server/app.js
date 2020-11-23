@@ -82,6 +82,14 @@ const prepareApp = async () => {
         nextApp.render(req, res, '/'),
     );
 
+    app.get('/profile', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/profile'),
+    );
+
+    app.get('/featured', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/featured'),
+    );
+
     app.get('/user/:username', checkAuthenticated, (req, res) =>
         nextApp.render(req, res, '/user', {
             username: req.params.username,

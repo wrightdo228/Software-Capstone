@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import Link from 'next/link';
 
 const Container = styled.div`
     background-color: #fff;
@@ -52,9 +53,15 @@ const Navbar = () => (
             <div id="left-placeholder" />
             <input />
             <div id="nav-items">
-                <a>Home</a>
-                <a>Featured</a>
-                <a>Profile</a>
+                <Link href="/">
+                    <a>Home</a>
+                </Link>
+                <Link href="/featured">
+                    <a>Featured</a>
+                </Link>
+                <Link href="/profile">
+                    <a>Profile</a>
+                </Link>
             </div>
         </div>
     </Container>
