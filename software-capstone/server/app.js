@@ -96,6 +96,12 @@ const prepareApp = async () => {
         }),
     );
 
+    app.get('/favorites/:username', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/favorites', {
+            username: req.params.username,
+        }),
+    );
+
     app.get('/search/:searchParams', checkAuthenticated, (req, res) =>
         nextApp.render(req, res, '/search', {
             searchParams: req.params.searchParams,

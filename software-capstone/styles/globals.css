@@ -39,3 +39,7 @@ button {
   font-weight: 700;
   cursor: pointer;
 }
+
+button:hover {
+  background-color: #1b1ee6;
+}

@@ -19,6 +19,13 @@ const userSchema = new Schema({
         trim: true,
         required: 'Please supply a username',
     },
+    normalizedUsername: {
+        type: String,
+        unique: true,
+        lowercase: true,
+        trim: true,
+        required: true,
+    },
     createdAt: { type: Date, default: Date.now },
     posts: [
         {
