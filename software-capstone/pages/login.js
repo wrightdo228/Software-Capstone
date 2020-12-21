@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import styled from 'styled-components';
 import Router from 'next/router';
+import Link from 'next/link';
 
 const LoginForm = styled.form`
     max-width: 700px;
@@ -10,13 +11,27 @@ const LoginForm = styled.form`
     margin: 75px auto 0 auto;
     background-color: #fff;
 
-    label {
+    > label {
+        font-size: 14px;
         margin-bottom: 36px;
         display: block;
     }
 
-    label:last-child {
-        margin-bottom: 0;
+    > label:last-of-type {
+        margin-bottom: 23px;
+    }
+
+    > p:first-of-type {
+        margin-top: 16px;
+        margin-bottom: 11px;
+    }
+
+    p {
+        font-size: 12px;
+    }
+
+    .link-text {
+        color: #0092e4;
     }
 `;
 
@@ -81,6 +96,18 @@ const Login = () => {
                     />
                 </label>
                 <button type="submit">Login</button>
+                <p>
+                    Forgot your password?{' '}
+                    <Link href="/change-password">
+                        <a className="link-text">Click here</a>
+                    </Link>
+                </p>
+                <p>
+                    Don’t have an account?{' '}
+                    <Link href="/register">
+                        <a className="link-text">Register</a>
+                    </Link>
+                </p>
             </LoginForm>
         </div>
     );

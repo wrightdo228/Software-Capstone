@@ -72,7 +72,7 @@ router.get('/main-feed', authenticate, async (req, res) => {
     })
         .populate(
             'user',
-            '-posts -favorites -reposts -email -createdAt -__v -_id',
+            '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
         )
         .sort({ createdAt: -1 });
 
@@ -86,7 +86,7 @@ router.get('/user-feed/:username', authenticate, async (req, res) => {
     const posts = await Post.find({ user })
         .populate(
             'user',
-            '-posts -favorites -reposts -email -createdAt -__v -_id',
+            '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
         )
         .sort({ createdAt: -1 });
 
@@ -110,7 +110,7 @@ router.get('/search/:searchParams', authenticate, async (req, res) => {
     })
         .populate(
             'user',
-            '-posts -favorites -reposts -email -createdAt -__v -_id',
+            '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
         )
         .sort({ createdAt: -1 });
 
@@ -160,6 +160,70 @@ router.post('/favorite', authenticate, async (req, res) => {
         res.status(200).send();
     } catch {
         res.status(500).send();
+    }
+});
+
+router.get('/favorites/:username', authenticate, async (req, res) => {
+    try {
+        const { username } = req.params;
+
+        const user = await User.findOne({ username });
+
+        const favorites = await Favorite.find({ user })
+            .populate({
+                path: 'post',
+                populate: {
+                    path: 'user',
+                    model: 'User',
+                    select:
+                        '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
+                },
+            })
+            .sort({ createdAt: -1 });
+
+        const reducedFavorites = favorites.map((favorite) => favorite.post);
+
+        res.status(200).json(reducedFavorites);
+    } catch {
+        res.status(500).send();
+    }
+});
+
+router.post('/comment', authenticate, async (req, res) => {
+    try {
+        const { postId, comment } = req.body;
+
+        const newComment = { user: req.user._id, comment };
+
+        await Post.findOneAndUpdate(
+            { _id: postId },
+            { $push: { comments: newComment } },
+        );
+
+        res.status(200).send();
+    } catch {
+        res.status(500).send();
+    }
+});
+
+router.get('/:postId', authenticate, async (req, res) => {
+    try {
+        const { postId } = req.params;
+
+        const post = await Post.findById(postId)
+            .populate(
+                'user',
+                '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
+            )
+            .populate('comments.user', 'username');
+
+        if (!post) {
+            return res.status(404).send();
+        }
+
+        res.status(200).json(post);
+    } catch {
+        res.status(400).send();
     }
 });
 

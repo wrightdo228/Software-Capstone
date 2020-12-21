@@ -2,43 +2,19 @@ const mongoose = require('mongoose');
 
 const { Schema } = mongoose;
 
-const NestedReply = new Schema({
-    ReplyBody: {
-        type: String,
-        required: 'Please supply a body for your comment',
-    },
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-    },
-    createdAt: { type: Date, default: Date.now },
-});
-
-const Reply = new Schema({
-    ReplyBody: {
-        type: String,
-        required: 'Please supply a body for your comment',
-    },
-    replies: [NestedReply],
-    user: {
-        type: Schema.Types.ObjectId,
-        ref: 'User',
-    },
-    createdAt: { type: Date, default: Date.now },
-});
-
 const Comment = new Schema({
-    commentBody: {
+    comment: {
         type: String,
         required: 'Please supply a body for your comment',
     },
-    replies: [Reply],
     user: {
         type: Schema.Types.ObjectId,
         ref: 'User',
     },
     createdAt: { type: Date, default: Date.now },
 });
+
+Comment.add({ replies: [Comment] });
 
 const postSchema = new Schema({
     title: {

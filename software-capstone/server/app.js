@@ -96,10 +96,20 @@ const prepareApp = async () => {
         }),
     );
 
+    app.get('/favorites/:username', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, '/favorites', {
+            username: req.params.username,
+        }),
+    );
+
     app.get('/search/:searchParams', checkAuthenticated, (req, res) =>
         nextApp.render(req, res, '/search', {
             searchParams: req.params.searchParams,
         }),
+    );
+
+    app.get('/post/:postId', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, `/post/${req.params.postId}`),
     );
 
     app.get('/login', checkNotAuthenticated, (req, res) =>

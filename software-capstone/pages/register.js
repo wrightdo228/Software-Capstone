@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { useRouter } from 'next/router';
 
 const RegisterForm = styled.form`
     max-width: 700px;
@@ -14,12 +15,13 @@ const RegisterForm = styled.form`
         display: block;
     }
 
-    label:last-child {
+    label:last-of-type {
         margin-bottom: 0;
     }
 `;
 
 const Register = () => {
+    const router = useRouter();
     const [formState, setFormState] = useState({
         email: '',
         password: '',
@@ -33,13 +35,14 @@ const Register = () => {
         const response = await fetch('/api/account', {
             body: JSON.stringify(formState),
             method: 'POST',
+            credentials: 'include',
             headers: {
                 'content-type': 'application/json',
             },
         });
 
         if (response.ok) {
-            console.log('Account created...');
+            router.push('/');
         } else {
             console.log('Account creation failed...');
         }

@@ -55,7 +55,10 @@ const UserCard = ({ openCreatePost, user }) => {
                 username={user.username}
             />
             <UserCardSection>
-                <Link href="#">
+                <Link
+                    href={`/favorites?username=${user.username}`}
+                    as={`/favorites/${user.username}`}
+                >
                     <a>
                         <Icon type="favorite" />
                         <p>Favorites ({user.favoriteCount})</p>

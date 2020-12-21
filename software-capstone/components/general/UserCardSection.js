@@ -5,13 +5,16 @@ const Container = styled.div`
     padding: 8px 30px;
     display: flex;
     align-items: center;
+    transition: color 0.2s ease;
+    cursor: pointer;
 
-    :hover {
-        cursor: pointer;
-        svg {
-            fill: #a81010;
-            transition: fill 0.25s ease;
-        }
+    &:hover {
+        color: #a81010;
+    }
+
+    &:hover svg path {
+        fill: #a81010;
+        transition: fill 0.2s ease;
     }
 
     a {
