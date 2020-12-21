@@ -1,9 +1,7 @@
-import { json } from 'body-parser';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import styled from 'styled-components';
 import Modal from '../general/Modal';
-import TextEditor from './TextEditor';
 
 const Form = styled.form`
     label {
@@ -11,6 +9,23 @@ const Form = styled.form`
         font-weight: 700;
         font-size: 14px;
         margin-bottom: 14px;
+    }
+
+    textarea {
+        font-weight: 400;
+        padding: 10px;
+        height: 350px;
+        width: 100%;
+        border: 1px solid #c4c4c4;
+        border-radius: 10px;
+        resize: none;
+        font-family: Roboto;
+        outline: none;
+        margin-top: 5px;
+    }
+
+    input {
+        margin-top: 5px;
     }
 `;
 
@@ -26,7 +41,7 @@ const BottomContainer = styled.div`
 
 const CreatePost = ({ onClose, open }) => {
     const [title, setTitle] = useState('');
-    const [bodyHtml, setBodyHtml] = useState('');
+    const [postBody, setPostBody] = useState('');
     const [sandboxLink, setSandboxLink] = useState('');
 
     const handleSubmit = async (e) => {
@@ -36,7 +51,7 @@ const CreatePost = ({ onClose, open }) => {
             method: 'POST',
             body: JSON.stringify({
                 title,
-                postBody: bodyHtml,
+                postBody,
                 sandboxLink,
             }),
             credentials: 'include',
@@ -46,7 +61,7 @@ const CreatePost = ({ onClose, open }) => {
         });
 
         if (response.ok) {
-            console.log('Success...');
+            onClose();
         } else {
             console.log('fail...');
         }
@@ -66,7 +81,11 @@ const CreatePost = ({ onClose, open }) => {
                 </label>
                 <label htmlFor="body">
                     Body
-                    <TextEditor setBodyHtml={setBodyHtml} />
+                    <textarea
+                        value={postBody}
+                        onChange={(e) => setPostBody(e.target.value)}
+                    />
+                    {/* <TextEditor setBodyHtml={setBodyHtml} /> */}
                 </label>
                 <BottomContainer>
                     <input

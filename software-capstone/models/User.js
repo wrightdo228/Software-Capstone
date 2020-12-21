@@ -24,7 +24,7 @@ const userSchema = new Schema({
         unique: true,
         lowercase: true,
         trim: true,
-        required: true,
+        // required: true,
     },
     createdAt: { type: Date, default: Date.now },
     posts: [

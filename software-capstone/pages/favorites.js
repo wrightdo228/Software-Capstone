@@ -2,7 +2,12 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import Posts from '../components/posts/Posts';
 
-const Container = styled.div``;
+const Container = styled.div`
+    display: flex;
+    flex-direction: column;
+    margin: 75px auto;
+    max-width: 1000px;
+`;
 
 const Favorites = ({ posts }) => (
     <Container>

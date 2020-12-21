@@ -189,6 +189,44 @@ router.get('/favorites/:username', authenticate, async (req, res) => {
     }
 });
 
+router.post('/comment', authenticate, async (req, res) => {
+    try {
+        const { postId, comment } = req.body;
+
+        const newComment = { user: req.user._id, comment };
+
+        await Post.findOneAndUpdate(
+            { _id: postId },
+            { $push: { comments: newComment } },
+        );
+
+        res.status(200).send();
+    } catch {
+        res.status(500).send();
+    }
+});
+
+router.get('/:postId', authenticate, async (req, res) => {
+    try {
+        const { postId } = req.params;
+
+        const post = await Post.findById(postId)
+            .populate(
+                'user',
+                '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
+            )
+            .populate('comments.user', 'username');
+
+        if (!post) {
+            return res.status(404).send();
+        }
+
+        res.status(200).json(post);
+    } catch {
+        res.status(400).send();
+    }
+});
+
 router.delete('/favorite', authenticate, async (req, res, next) => {});
 
 router.get('/', authenticate, async (req, res) => {});

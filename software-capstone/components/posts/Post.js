@@ -29,6 +29,10 @@ const LeftSide = styled.div`
     .post-avatar {
         margin-bottom: 10px;
     }
+
+    .username {
+        padding-left: 2px;
+    }
 `;
 
 const RightSide = styled.div`
@@ -36,6 +40,10 @@ const RightSide = styled.div`
         font-size: 14px;
         font-weight: 700;
         margin-bottom: 30px;
+    }
+
+    .post-body {
+        white-space: pre-wrap;
     }
 `;
 
@@ -64,10 +72,7 @@ const Post = ({ post: { title, postBody, _id, codeSandboxId, user } }) => (
             </LeftSide>
             <RightSide>
                 <h5 className="post-title">{title}</h5>
-                <div
-                    className="post-body"
-                    dangerouslySetInnerHTML={{ __html: postBody }}
-                />
+                <p className="post-body">{postBody}</p>
             </RightSide>
         </BasicContent>
         {codeSandboxId && <CodePreview sandboxId={codeSandboxId} />}
