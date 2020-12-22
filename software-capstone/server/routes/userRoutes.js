@@ -26,7 +26,7 @@ router.get('/', authenticate, async (req, res) => {
 
     const reducedUser = getReducedUser(user, req);
 
-    res.json(reducedUser);
+    return res.json(reducedUser);
 });
 
 router.post('/follow/:userId', authenticate, async (req, res) => {
@@ -50,7 +50,7 @@ router.post('/follow/:userId', authenticate, async (req, res) => {
     follower.following.push(savedUser);
     await follower.save();
 
-    res.status(200).send();
+    return res.status(200).send();
 });
 
 router.post('/upload-avatar', authenticate, async (req, res) => {
@@ -99,7 +99,7 @@ router.delete('/follow/:userId', authenticate, async (req, res) => {
         return res.send();
     }
 
-    res.status(200).send();
+    return res.status(200).send();
 });
 
 router.get('/:username', authenticate, async (req, res) => {
@@ -107,7 +107,7 @@ router.get('/:username', authenticate, async (req, res) => {
 
     const reducedUser = getReducedUser(user, req);
 
-    res.json(reducedUser);
+    return res.json(reducedUser);
 });
 
 module.exports = router;

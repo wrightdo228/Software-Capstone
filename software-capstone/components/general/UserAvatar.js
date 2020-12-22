@@ -12,10 +12,7 @@ const Image = styled.img`
 const UserAvatar = ({ type, avatarUrl }) => (
     <Image
         type={type}
-        src={
-            avatarUrl ||
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTASuKF-9t-jE1Isaql0sxlcTmElACM51FanQ&usqp=CAU'
-        }
+        src={avatarUrl || '/images/placeholders/blank-avatar.jpg'}
     />
 );
 
