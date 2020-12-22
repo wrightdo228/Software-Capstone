@@ -53,6 +53,7 @@ const UserCard = ({ openCreatePost, user }) => {
                 followerCount={user.followerCount}
                 followingCount={user.followingCount}
                 username={user.username}
+                avatarUrl={user.avatar}
             />
             <UserCardSection>
                 <Link

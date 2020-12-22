@@ -1,10 +1,13 @@
 const mongoose = require('mongoose');
 const express = require('express');
+
+const upload = require('../services/fileUpload');
 const authenticate = require('../middleware/authenticate');
 
 const User = mongoose.model('User');
-
 const router = express.Router();
+
+const singleImageUpload = upload.single('image');
 
 const getReducedUser = (user, req) => ({
     id: user._id,
@@ -13,20 +16,13 @@ const getReducedUser = (user, req) => ({
     followingCount: user.following.length,
     favoriteCount: user.favorites.length,
     collectionCount: 5,
+    avatar: user.avatar,
     ownAccount: user._id.equals(req.user._id),
     following: user.followers.includes(req.user._id),
 });
 
 router.get('/', authenticate, async (req, res) => {
     const user = await User.findById(req.user._id);
-
-    const reducedUser = getReducedUser(user, req);
-
-    res.json(reducedUser);
-});
-
-router.get('/:username', authenticate, async (req, res) => {
-    const user = await User.findOne({ username: req.params.username });
 
     const reducedUser = getReducedUser(user, req);
 
@@ -57,6 +53,30 @@ router.post('/follow/:userId', authenticate, async (req, res) => {
     res.status(200).send();
 });
 
+router.post('/upload-avatar', authenticate, async (req, res) => {
+    try {
+        singleImageUpload(req, res, async (error) => {
+            if (error) {
+                console.log(error);
+                return res.status(400).send();
+            }
+
+            await User.findByIdAndUpdate(
+                { _id: req.user._id },
+                {
+                    $set: {
+                        avatar: req.file.location,
+                    },
+                },
+            );
+
+            return res.status(200).send();
+        });
+    } catch {
+        return res.status(500).send();
+    }
+});
+
 router.delete('/follow/:userId', authenticate, async (req, res) => {
     try {
         const follower = await User.findById(req.user._id);
@@ -80,6 +100,14 @@ router.delete('/follow/:userId', authenticate, async (req, res) => {
     }
 
     res.status(200).send();
+});
+
+router.get('/:username', authenticate, async (req, res) => {
+    const user = await User.findOne({ username: req.params.username });
+
+    const reducedUser = getReducedUser(user, req);
+
+    res.json(reducedUser);
 });
 
 module.exports = router;

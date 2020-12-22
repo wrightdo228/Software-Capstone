@@ -60,7 +60,7 @@ const Post = ({ post: { title, postBody, _id, codeSandboxId, user } }) => (
                     as={`/user/${user.username}`}
                 >
                     <a className="post-avatar">
-                        <UserAvatar />
+                        <UserAvatar avatarUrl={user.avatar} />
                     </a>
                 </Link>
                 <Link

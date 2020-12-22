@@ -26,6 +26,9 @@ const userSchema = new Schema({
         trim: true,
         // required: true,
     },
+    avatar: {
+        type: String,
+    },
     createdAt: { type: Date, default: Date.now },
     posts: [
         {
