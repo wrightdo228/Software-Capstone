@@ -28,9 +28,14 @@ const Container = styled.div`
     }
 `;
 
-const UserInfoSection = ({ username, followerCount, followingCount }) => (
+const UserInfoSection = ({
+    username,
+    followerCount,
+    followingCount,
+    avatarUrl,
+}) => (
     <Container>
-        <UserAvatar />
+        <UserAvatar avatarUrl={avatarUrl} />
         <div>
             <Link href={`/${username}`}>
                 <a className="username">{username}</a>
@@ -49,6 +54,7 @@ UserInfoSection.propTypes = {
     username: PropTypes.string.isRequired,
     followerCount: PropTypes.number.isRequired,
     followingCount: PropTypes.number.isRequired,
+    avatarUrl: PropTypes.string,
 };
 
 export default UserInfoSection;

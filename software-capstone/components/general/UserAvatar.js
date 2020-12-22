@@ -9,10 +9,10 @@ const Image = styled.img`
     border-radius: 10px;
 `;
 
-const UserAvatar = ({ type }) => (
+const UserAvatar = ({ type, avatarUrl }) => (
     <Image
         type={type}
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn%3AANd9GcTASuKF-9t-jE1Isaql0sxlcTmElACM51FanQ&usqp=CAU"
+        src={avatarUrl || '/images/placeholders/blank-avatar.jpg'}
     />
 );
 
@@ -22,6 +22,7 @@ UserAvatar.defaultProps = {
 
 UserAvatar.propTypes = {
     type: PropTypes.oneOf(['regular', 'mini']),
+    avatarUrl: PropTypes.string,
 };
 
 export default UserAvatar;

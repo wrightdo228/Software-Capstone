@@ -42,10 +42,9 @@ Home.getInitialProps = async ({ req }) => {
         props.success = true;
         props.user = jsonObject;
         props.posts = await feedResponse.json();
-        return props;
     }
 
-    return {};
+    return props;
 };
 
 export default Home;
