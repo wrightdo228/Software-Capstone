@@ -112,6 +112,14 @@ const prepareApp = async () => {
         nextApp.render(req, res, `/post/${req.params.postId}`),
     );
 
+    app.get('/following/:userId', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, `/following/${req.params.userId}`),
+    );
+
+    app.get('/followers/:userId', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, `/followers/${req.params.userId}`),
+    );
+
     app.get('/login', checkNotAuthenticated, (req, res) =>
         nextApp.render(req, res, '/login'),
     );

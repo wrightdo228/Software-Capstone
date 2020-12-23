@@ -102,6 +102,21 @@ router.delete('/follow/:userId', authenticate, async (req, res) => {
     return res.status(200).send();
 });
 
+router.get('/following/:userId', authenticate, async (req, res) => {
+    try {
+        const user = await User.findOne({
+            username: req.params.userId,
+        })
+            .select('following username')
+            .populate('following');
+
+        return res.json(user);
+    } catch {
+        res.status(500);
+        return res.send();
+    }
+});
+
 router.get('/:username', authenticate, async (req, res) => {
     const user = await User.findOne({ username: req.params.username });
 
