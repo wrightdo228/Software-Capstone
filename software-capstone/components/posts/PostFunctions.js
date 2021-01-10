@@ -1,6 +1,9 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 import IconButton from '../buttons/IconButton';
+import Modal from '../general/Modal';
+import CollectionsModal from '../collections/CollectionsModal';
 
 const Container = styled.div`
     display: flex;
@@ -8,6 +11,8 @@ const Container = styled.div`
 `;
 
 const PostFunctions = ({ postId }) => {
+    const [collectionsOpen, setCollectionsOpen] = useState(false);
+
     const favorite = async () => {
         const response = await fetch('/api/post/favorite', {
             method: 'POST',
@@ -29,6 +34,17 @@ const PostFunctions = ({ postId }) => {
 
     return (
         <Container className="post-functions">
+            {collectionsOpen && (
+                <CollectionsModal
+                    open={collectionsOpen}
+                    onClose={() => setCollectionsOpen(false)}
+                    postId={postId}
+                />
+            )}
+            <IconButton
+                type="collection"
+                onClick={() => setCollectionsOpen(true)}
+            />
             <IconButton type="favorite" onClick={favorite} />
         </Container>
     );

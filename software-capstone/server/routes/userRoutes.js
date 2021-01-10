@@ -15,7 +15,7 @@ const getReducedUser = (user, req) => ({
     followerCount: user.followers.length,
     followingCount: user.following.length,
     favoriteCount: user.favorites.length,
-    collectionCount: 5,
+    collectionCount: user.postCollections.length,
     avatar: user.avatar,
     ownAccount: user._id.equals(req.user._id),
     following: user.followers.includes(req.user._id),
@@ -102,10 +102,10 @@ router.delete('/follow/:userId', authenticate, async (req, res) => {
     return res.status(200).send();
 });
 
-router.get('/following/:userId', authenticate, async (req, res) => {
+router.get('/following/:username', authenticate, async (req, res) => {
     try {
         const user = await User.findOne({
-            username: req.params.userId,
+            username: req.params.username,
         })
             .select('following username')
             .populate('following');

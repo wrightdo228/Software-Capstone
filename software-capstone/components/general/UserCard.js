@@ -67,7 +67,7 @@ const UserCard = ({ openCreatePost, user }) => {
                 </Link>
             </UserCardSection>
             <UserCardSection>
-                <Link href="#">
+                <Link href={`/collections/${user.username}`}>
                     <a>
                         <Icon type="collection" />
                         <p>Collections ({user.collectionCount})</p>

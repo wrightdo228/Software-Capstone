@@ -16,7 +16,7 @@ Followers.getInitialProps = async ({ query, req }) => {
     const props = { success: false, user: {} };
 
     const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/following/${query.userId}`,
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/user/following/${query.username}`,
         {
             credentials: 'include',
             headers: req ? { cookie: req.headers.cookie } : undefined,
