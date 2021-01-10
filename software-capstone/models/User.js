@@ -22,7 +22,7 @@ const userSchema = new Schema({
     normalizedUsername: {
         type: String,
         unique: true,
-        lowercase: true,
+        uppercase: true,
         trim: true,
         // required: true,
     },
@@ -48,6 +48,26 @@ const userSchema = new Schema({
             ref: 'Repost',
         },
     ],
+    postCollections: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'PostCollection',
+        },
+    ],
+    role: {
+        type: String,
+        enum: ['user', 'admin', 'super-admin'],
+        default: 'user',
+    },
+    status: {
+        type: String,
+        enum: ['active', 'banned'],
+        default: 'active',
+    },
+    accountActivated: {
+        type: Boolean,
+        default: false,
+    },
     following: [{ type: Schema.ObjectId, ref: 'User' }],
     followers: [{ type: Schema.ObjectId, ref: 'User' }],
 });

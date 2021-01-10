@@ -8,6 +8,8 @@ require('../models/Post');
 require('../models/Repost');
 require('../models/User');
 require('../models/Favorite');
+require('../models/PostCollection');
+require('../models/CollectionFavorite');
 require('./handlers/passport');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -17,6 +19,7 @@ const userRoutes = require('./routes/userRoutes');
 const accountRoutes = require('./routes/accountRoutes');
 const authRoutes = require('./routes/authRoutes');
 const postRoutes = require('./routes/postRoutes');
+const collectionRoutes = require('./routes/collectionRoutes');
 
 const PORT = process.env.PORT || 3000;
 const dev = process.env.NODE_ENV !== 'production';
@@ -26,17 +29,25 @@ const daysInMilliseconds = 1000 * 60 * 60 * 24 * 30; // 30 days
 
 const checkNotAuthenticated = (req, res, next) => {
     if (!req.isAuthenticated()) {
+        if (req.user.status === 'banned') {
+            return res.redirect('/banned');
+        }
+
         next();
     } else {
-        res.redirect('/');
+        return res.redirect('/');
     }
 };
 
 const checkAuthenticated = (req, res, next) => {
     if (req.isAuthenticated()) {
+        if (req.user.status === 'banned') {
+            return res.redirect('/banned');
+        }
+
         next();
     } else {
-        res.redirect('/login');
+        return res.redirect('/login');
     }
 };
 
@@ -69,6 +80,7 @@ const prepareApp = async () => {
             }),
         }),
     );
+
     app.use(passport.initialize());
     app.use(passport.session());
     await nextApp.prepare();
@@ -77,6 +89,7 @@ const prepareApp = async () => {
     app.use('/api/authentication', authRoutes);
     app.use('/api/post', postRoutes);
     app.use('/api/user', userRoutes);
+    app.use('/api/collection', collectionRoutes);
 
     app.get('/', checkAuthenticated, (req, res) =>
         nextApp.render(req, res, '/'),
@@ -112,12 +125,12 @@ const prepareApp = async () => {
         nextApp.render(req, res, `/post/${req.params.postId}`),
     );
 
-    app.get('/following/:userId', checkAuthenticated, (req, res) =>
-        nextApp.render(req, res, `/following/${req.params.userId}`),
+    app.get('/following/:username', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, `/following/${req.params.username}`),
     );
 
-    app.get('/followers/:userId', checkAuthenticated, (req, res) =>
-        nextApp.render(req, res, `/followers/${req.params.userId}`),
+    app.get('/followers/:username', checkAuthenticated, (req, res) =>
+        nextApp.render(req, res, `/followers/${req.params.username}`),
     );
 
     app.get('/login', checkNotAuthenticated, (req, res) =>
