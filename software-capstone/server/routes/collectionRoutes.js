@@ -95,6 +95,14 @@ router.put('/:collectionId/:postId', authenticate, async (req, res) => {
     }
 });
 
+router.get('/search/:title', authenticate, async (req, res) => {
+    const collections = await PostCollection.find({
+        username: { $regex: req.params.title.trim(), $options: 'i' },
+    });
+
+    return res.json(collections);
+});
+
 router.get('/:collectionId', authenticate, async (req, res) => {
     try {
         console.log('here');

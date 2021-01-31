@@ -21,7 +21,7 @@ UserAvatar.defaultProps = {
 };
 
 UserAvatar.propTypes = {
-    type: PropTypes.oneOf(['regular', 'mini']),
+    type: PropTypes.oneOf(['regular', 'small']),
     avatarUrl: PropTypes.string,
 };
 

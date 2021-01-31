@@ -25,9 +25,19 @@ const postCollectionSchema = new Schema({
             ref: 'Post',
         },
     ],
+    isPrivate: {
+        type: Boolean,
+        required: true,
+    },
     image: {
         type: String,
         required: true,
+    },
+    featured: {
+        type: Boolean,
+    },
+    featuredOn: {
+        type: Date,
     },
     createdAt: { type: Date, default: Date.now },
 });

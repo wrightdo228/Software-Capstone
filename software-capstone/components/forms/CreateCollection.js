@@ -33,6 +33,7 @@ const Form = styled.form`
 const CreateCollection = ({ onClose, open }) => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
+    const [privateChecked, setPrivateChecked] = useState(false);
     const [imageFile, handleImageChange, previewImage] = useImageUpload();
 
     const handleSubmit = async (e) => {
@@ -79,7 +80,15 @@ const CreateCollection = ({ onClose, open }) => {
                 </label>
                 <img src={previewImage} alt="preview" />
                 <input type="file" required onChange={handleImageChange} />
-                <button type="submit">Create</button>
+                <label htmlFor="private-checkbox">
+                    <input
+                        id="private-checkbox"
+                        value={privateChecked}
+                        type="checkbox"
+                        onChange={(e) => setPrivateChecked(e.target.checked)}
+                    />
+                    <button type="submit">Create</button>
+                </label>
             </Form>
         </Modal>
     );

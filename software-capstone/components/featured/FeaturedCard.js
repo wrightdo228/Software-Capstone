@@ -65,7 +65,7 @@ const FeaturedCard = () => (
             <a>
                 <BlurContainer />
                 <div className="feature-content">
-                    <UserAvatar type="mini" />
+                    <UserAvatar type="small" />
                     <div>
                         <h5>React Tips For New Developers</h5>
                         <p>
