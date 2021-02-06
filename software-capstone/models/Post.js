@@ -47,6 +47,13 @@ const postSchema = new Schema({
             ref: 'Repost',
         },
     ],
+    featured: {
+        type: Boolean,
+        default: false,
+    },
+    featuredOn: {
+        type: Date,
+    },
 });
 
 module.exports = mongoose.model('Post', postSchema);

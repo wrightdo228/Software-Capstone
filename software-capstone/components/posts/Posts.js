@@ -16,10 +16,12 @@ const Container = styled.div`
     }
 `;
 
-const Posts = ({ posts }) => (
+const Posts = ({ posts, currentUser }) => (
     <Container>
         {posts.length > 0 ? (
-            posts.map((post) => <Post key={post._id} post={post} />)
+            posts.map((post) => (
+                <Post currentUser={currentUser} key={post._id} post={post} />
+            ))
         ) : (
             <NoPosts />
         )}

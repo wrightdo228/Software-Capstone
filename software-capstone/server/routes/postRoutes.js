@@ -1,6 +1,7 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const authenticate = require('../middleware/authenticate');
+const adminCheck = require('../middleware/adminCheck');
 
 const User = mongoose.model('User');
 const Post = mongoose.model('Post');
@@ -61,6 +62,26 @@ router.post('/', authenticate, async (req, res) => {
     }
 });
 
+router.delete('/:postId', authenticate, async (req, res) => {
+    const { postId } = req.params;
+    const post = await Post.findById(postId).populate('user');
+
+    if (!post) {
+        return req.status(404).send();
+    }
+
+    const deleteAllowed =
+        ['admin', 'super-admin'].includes(req.user.role) ||
+        post._id.equals(req.user._id);
+
+    if (!deleteAllowed) {
+        return req.statusCode(401).send();
+    }
+
+    await Favorite.deleteMany({ post: postId });
+    await Post.findByIdAndDelete(postId);
+});
+
 router.get('/main-feed', authenticate, async (req, res) => {
     const user = await User.findById(req.user._id);
     const following = [...user.following, user._id];
@@ -72,7 +93,7 @@ router.get('/main-feed', authenticate, async (req, res) => {
     })
         .populate(
             'user',
-            '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
+            '-posts -favorites -reposts -email -createdAt -__v -followers -following',
         )
         .sort({ createdAt: -1 });
 
@@ -205,6 +226,37 @@ router.post('/comment', authenticate, async (req, res) => {
         res.status(500).send();
     }
 });
+
+router.put('/feature/:postId', authenticate, adminCheck, async (req, res) => {
+    const post = await Post.findByIdAndUpdate(req.params.postId, {
+        featured: true,
+        featuedOn: Date.now(),
+    });
+
+    if (post) {
+        return res.status(200).send();
+    }
+
+    return res.status(404).send();
+});
+
+router.put(
+    '/remove-feature/:postId',
+    authenticate,
+    adminCheck,
+    async (req, res) => {
+        const post = await Post.findByIdAndUpdate(req.params.postId, {
+            featured: false,
+            featuedOn: null,
+        });
+
+        if (post) {
+            return res.status(200).send();
+        }
+
+        return res.status(404).send();
+    },
+);
 
 router.get('/:postId', authenticate, async (req, res) => {
     try {

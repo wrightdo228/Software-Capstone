@@ -27,7 +27,7 @@ const Timeline = ({ posts, user }) => {
                     user={user}
                     openCreatePost={() => setCreatePostOpen(true)}
                 />
-                <Posts posts={posts} />
+                <Posts currentUser={user} posts={posts} />
             </Container>
         </>
     );

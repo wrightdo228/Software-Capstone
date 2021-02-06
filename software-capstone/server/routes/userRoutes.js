@@ -19,6 +19,8 @@ const getReducedUser = (user, req) => ({
     avatar: user.avatar,
     ownAccount: user._id.equals(req.user._id),
     following: user.followers.includes(req.user._id),
+    role: user.role,
+    status: user.status,
 });
 
 router.get('/', authenticate, async (req, res) => {

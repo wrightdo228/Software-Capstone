@@ -9,7 +9,6 @@ require('../models/Repost');
 require('../models/User');
 require('../models/Favorite');
 require('../models/PostCollection');
-require('../models/CollectionFavorite');
 require('./handlers/passport');
 const mongoose = require('mongoose');
 const session = require('express-session');

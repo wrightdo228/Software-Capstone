@@ -37,7 +37,7 @@ const UserInfoSection = ({
     <Container>
         <UserAvatar avatarUrl={avatarUrl} />
         <div>
-            <Link href={`/${username}`}>
+            <Link href={`/user/${username}`}>
                 <a className="username">{username}</a>
             </Link>
             <Link href={`/following/${username}`}>

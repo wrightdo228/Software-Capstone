@@ -31,7 +31,14 @@ const IconButton = ({ type, onClick, selected }) => (
 );
 
 IconButton.propTypes = {
-    type: PropTypes.oneOf(['favorite', 'collection', 'new', 'reply']),
+    type: PropTypes.oneOf([
+        'favorite',
+        'collection',
+        'new',
+        'reply',
+        'menu',
+        'follow',
+    ]),
     onClick: PropTypes.func,
     selected: PropTypes.bool,
 };
