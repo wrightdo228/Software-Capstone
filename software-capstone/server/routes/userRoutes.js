@@ -14,11 +14,13 @@ const getReducedUser = (user, req) => ({
     username: user.username,
     followerCount: user.followers.length,
     followingCount: user.following.length,
-    favoriteCount: user.favorites.length,
+    favorites: user.favorites,
     collectionCount: user.postCollections.length,
     avatar: user.avatar,
     ownAccount: user._id.equals(req.user._id),
     following: user.followers.includes(req.user._id),
+    role: user.role,
+    status: user.status,
 });
 
 router.get('/', authenticate, async (req, res) => {
@@ -115,6 +117,104 @@ router.get('/following/:username', authenticate, async (req, res) => {
         res.status(500);
         return res.send();
     }
+});
+
+router.get('/search/:username', authenticate, async (req, res) => {
+    const users = await User.find({
+        username: { $regex: req.params.username.trim(), $options: 'i' },
+        _id: {
+            $ne: req.user._id,
+        },
+    });
+
+    const reducedUsers = users.map((user) => ({
+        _id: user._id,
+        username: user.username,
+        avatar: user.avatar,
+        status: user.status,
+        role: user.role,
+    }));
+
+    return res.json(reducedUsers);
+});
+
+router.put('/ban/:userId', authenticate, async (req, res) => {
+    const { userId } = req.params;
+
+    const user = await User.findByIdAndUpdate(userId, {
+        status: 'banned',
+    });
+
+    if (user) {
+        return res.status(200).send();
+    }
+
+    return res.status(400);
+});
+
+router.put('/unban/:userId', authenticate, async (req, res) => {
+    const { userId } = req.params;
+
+    const user = await User.findByIdAndUpdate(userId, {
+        status: 'active',
+    });
+
+    if (user) {
+        return res.status(200).send();
+    }
+
+    return res.status(400);
+});
+
+router.put('/make-admin/:userId', authenticate, async (req, res) => {
+    const { userId } = req.params;
+
+    const user = await User.findByIdAndUpdate(userId, {
+        role: 'admin',
+    });
+
+    if (user) {
+        return res.status(200).send();
+    }
+
+    return res.status(400);
+});
+
+router.put('/make-user/:userId', authenticate, async (req, res) => {
+    const { userId } = req.params;
+
+    const user = await User.findByIdAndUpdate(userId, {
+        role: 'user',
+    });
+
+    if (user) {
+        return res.status(200).send();
+    }
+
+    return res.status(400);
+});
+
+router.put('/make-super-admin/:userId', authenticate, async (req, res) => {
+    const { userId } = req.params;
+
+    const user = await User.findByIdAndUpdate(userId, {
+        role: 'super-admin',
+    });
+
+    if (user) {
+        return res.status(200).send();
+    }
+
+    return res.status(400);
+});
+
+router.get('/admin-info', authenticate, async (req, res) => {
+    const user = User.findById(req.user._Id);
+
+    return res.json({
+        isAdmin: user.role === 'admin',
+        isSuperAdmin: user.role === 'super-admin',
+    });
 });
 
 router.get('/:username', authenticate, async (req, res) => {

@@ -9,6 +9,7 @@ const Container = styled.div`
     border-bottom: 1px solid #c4c4c4;
     position: sticky;
     top: 0;
+    z-index: 100;
 
     form {
         width: 50%;

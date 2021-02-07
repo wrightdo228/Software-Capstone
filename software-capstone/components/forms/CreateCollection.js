@@ -3,6 +3,7 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import Modal from '../general/Modal';
 import useImageUpload from '../../customHooks/useImageUpload';
+import { usePageContextValue } from '../../context/PageContext';
 
 const Form = styled.form`
     label {
@@ -28,11 +29,18 @@ const Form = styled.form`
     input {
         margin-top: 5px;
     }
+
+    #private-checkbox {
+        width: unset;
+        height: unset;
+    }
 `;
 
 const CreateCollection = ({ onClose, open }) => {
     const [title, setTitle] = useState('');
+    const { collections, setCollections, currentUser } = usePageContextValue();
     const [description, setDescription] = useState('');
+    const [privateChecked, setPrivateChecked] = useState(false);
     const [imageFile, handleImageChange, previewImage] = useImageUpload();
 
     const handleSubmit = async (e) => {
@@ -43,6 +51,7 @@ const CreateCollection = ({ onClose, open }) => {
         formData.append('image', imageFile);
         formData.append('title', title);
         formData.append('description', description);
+        formData.append('private', privateChecked);
 
         const response = await fetch('/api/collection', {
             method: 'POST',
@@ -51,6 +60,19 @@ const CreateCollection = ({ onClose, open }) => {
         });
 
         if (response.ok) {
+            const newCollection = await response.json();
+            setCollections([
+                {
+                    ...newCollection,
+                    creator: {
+                        _id: currentUser.id,
+                        avatar: currentUser.avatar,
+                        username: currentUser.username,
+                    },
+                },
+                ...collections,
+            ]);
+
             onClose();
         } else {
             console.log('fail...');
@@ -77,8 +99,17 @@ const CreateCollection = ({ onClose, open }) => {
                         onChange={(e) => setDescription(e.target.value)}
                     />
                 </label>
-                <img src={previewImage} alt="preview" />
+                {previewImage && <img src={previewImage} alt="preview" />}
                 <input type="file" required onChange={handleImageChange} />
+                <label htmlFor="private-checkbox">
+                    Private:
+                    <input
+                        id="private-checkbox"
+                        value={privateChecked}
+                        type="checkbox"
+                        onChange={(e) => setPrivateChecked(e.target.checked)}
+                    />
+                </label>
                 <button type="submit">Create</button>
             </Form>
         </Modal>

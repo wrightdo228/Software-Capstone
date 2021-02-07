@@ -1,14 +1,18 @@
 import styled from 'styled-components';
-import PropTypes from 'prop-types';
 import Link from 'next/link';
+import PropTypes from 'prop-types';
 import UserAvatar from '../general/UserAvatar';
 import Icon from '../buttons/Icon';
+import { usePageContextValue } from '../../context/PageContext';
 
 const BlurContainer = styled.div`
     width: 100%;
-    background-image: url('https://hackernoon.com/hn-images/1*Kv-0AsHcK7WRrUDOH8YLIA.png');
+    background-image: ${({ image }) =>
+        `url(${image})` ||
+        "url('https://hackernoon.com/hn-images/1*Kv-0AsHcK7WRrUDOH8YLIA.png')"};
     filter: blur(1.8px);
     height: 236px;
+    background-size: cover;
 `;
 
 const Container = styled.div`
@@ -16,6 +20,7 @@ const Container = styled.div`
     border-radius: 10px;
     position: relative;
     overflow: hidden;
+    cursor: pointer;
 
     .feature-content {
         padding-left: 14px;
@@ -59,32 +64,45 @@ const Container = styled.div`
     }
 `;
 
-const FeaturedCard = () => (
-    <Container>
-        <Link href="#">
-            <a>
-                <BlurContainer />
-                <div className="feature-content">
-                    <UserAvatar type="mini" />
-                    <div>
-                        <h5>React Tips For New Developers</h5>
-                        <p>
-                            by{' '}
-                            <Link href="#">
-                                <a className="username">GreatProgrammer</a>
-                            </Link>
-                        </p>
-                    </div>
+const FeaturedCard = ({ collection }) => {
+    const { currentUser } = usePageContextValue();
+    const ownCollection = collection.creator._id === currentUser.id;
+
+    return (
+        <Container>
+            <Link href={`/collection/${collection._id}`}>
+                <BlurContainer image={collection.image} />
+            </Link>
+            <div className="feature-content">
+                <UserAvatar
+                    avatarUrl={collection.creator.avatar}
+                    type="small"
+                />
+                <div>
+                    <Link href={`/collection/${collection._id}`}>
+                        <h5>{collection.title}</h5>
+                    </Link>
+                    <p>
+                        by{' '}
+                        <Link href={`/user/${collection.creator.username}`}>
+                            <a className="username">
+                                {collection.creator.username}
+                            </a>
+                        </Link>
+                    </p>
                 </div>
+            </div>
+            {!ownCollection && (
                 <div className="favorite-content">
-                    <p>(100)</p>
                     <Icon type="favorite" />
                 </div>
-            </a>
-        </Link>
-    </Container>
-);
+            )}
+        </Container>
+    );
+};
 
-FeaturedCard.propTypes = {};
+FeaturedCard.propTypes = {
+    collection: PropTypes.object,
+};
 
 export default FeaturedCard;

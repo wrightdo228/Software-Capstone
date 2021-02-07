@@ -21,10 +21,12 @@ const postSchema = new Schema({
         type: String,
         trim: true,
         required: 'Please supply a title',
+        maxlength: 100,
     },
     postBody: {
         type: String,
         required: 'Please supply a body for your post',
+        maxlength: 320,
     },
     codeSandboxId: {
         type: String,
@@ -47,6 +49,13 @@ const postSchema = new Schema({
             ref: 'Repost',
         },
     ],
+    featured: {
+        type: Boolean,
+        default: false,
+    },
+    featuredOn: {
+        type: Date,
+    },
 });
 
 module.exports = mongoose.model('Post', postSchema);

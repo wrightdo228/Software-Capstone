@@ -9,7 +9,6 @@ require('../models/Repost');
 require('../models/User');
 require('../models/Favorite');
 require('../models/PostCollection');
-require('../models/CollectionFavorite');
 require('./handlers/passport');
 const mongoose = require('mongoose');
 const session = require('express-session');
@@ -27,27 +26,41 @@ const nextApp = next({ dev });
 const handle = nextApp.getRequestHandler();
 const daysInMilliseconds = 1000 * 60 * 60 * 24 * 30; // 30 days
 
-const checkNotAuthenticated = (req, res, next) => {
+const checkNotAuthenticated = async (req, res, next) => {
     if (!req.isAuthenticated()) {
-        if (req.user.status === 'banned') {
-            return res.redirect('/banned');
-        }
-
         next();
     } else {
         return res.redirect('/');
     }
 };
 
-const checkAuthenticated = (req, res, next) => {
+const checkAuthenticated = async (req, res, next) => {
     if (req.isAuthenticated()) {
-        if (req.user.status === 'banned') {
-            return res.redirect('/banned');
+        if (req.user.status) {
+            if (req.user.status === 'banned') {
+                return res.redirect('/banned');
+            }
+        } else {
+            const User = mongoose.model('User');
+
+            await User.findOneAndUpdate(
+                { _id: req.user._id },
+                { status: 'active' },
+            );
         }
 
         next();
     } else {
         return res.redirect('/login');
+    }
+};
+
+const adminCheck = (req, res, next) => {
+    const { role } = req.user;
+    if (role === 'admin' || role === 'super-admin') {
+        next();
+    } else {
+        return res.redirect('/');
     }
 };
 
@@ -139,6 +152,10 @@ const prepareApp = async () => {
 
     app.get('/register', checkNotAuthenticated, (req, res) =>
         nextApp.render(req, res, '/register'),
+    );
+
+    app.get('/admin', checkAuthenticated, adminCheck, (req, res) =>
+        nextApp.render(req, res, '/admin'),
     );
 
     app.get('*', (req, res) => handle(req, res));
