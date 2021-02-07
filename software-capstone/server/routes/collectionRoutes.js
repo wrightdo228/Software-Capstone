@@ -25,6 +25,24 @@ router.get('/', authenticate, async (req, res) => {
     }
 });
 
+router.get(
+    '/specific-collection/:collectionId',
+    authenticate,
+    async (req, res) => {
+        try {
+            const collection = await PostCollection.findById(
+                req.params.collectionId,
+            )
+                .populate('posts')
+                .populate('creator');
+
+            return res.json(collection);
+        } catch {
+            return res.status(500).send();
+        }
+    },
+);
+
 router.post('/', authenticate, async (req, res) => {
     try {
         singleImageUpload(req, res, async (error) => {
@@ -40,6 +58,7 @@ router.post('/', authenticate, async (req, res) => {
                 title: req.body.title,
                 description: req.body.description,
                 image: req.file.location,
+                isPrivate: req.body.private,
             });
 
             const savedPostCollection = await postCollection.save();
@@ -57,10 +76,168 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 router.put(
-    '/add-contributor/:collectionId/:',
+    '/add-contributor/:collectionId/:userId',
     authenticate,
-    async (req, res) => {},
+    async (req, res) => {
+        try {
+            const { collectionId, userId } = req.params;
+
+            const collection = await PostCollection.findById(
+                collectionId,
+            ).populate('creator');
+
+            if (!collection) {
+                return res.status(404).send();
+            }
+
+            const user = await User.findById(userId);
+
+            if (!user) {
+                return res.status(404).send();
+            }
+
+            const addAllowed = collection.creator._id.equals(req.user._id);
+
+            if (!addAllowed) {
+                return res.status(401).send();
+            }
+
+            const updateCollection = await PostCollection.findOneAndUpdate(
+                { _id: collection._id, contributors: { $ne: user } },
+                {
+                    $push: {
+                        contributors: user,
+                    },
+                },
+            );
+
+            if (!updateCollection) {
+                return res.status(400).send();
+            }
+
+            return res.status(200).send();
+        } catch {
+            return res.status(500).send();
+        }
+    },
 );
+
+router.put(
+    '/remove-contributor/:collectionId/:userId',
+    authenticate,
+    async (req, res) => {
+        try {
+            const { collectionId, userId } = req.params;
+
+            const collection = await PostCollection.findById(
+                collectionId,
+            ).populate('creator');
+
+            if (!collection) {
+                return res.status(404).send();
+            }
+
+            const user = await User.findById(userId);
+
+            if (!user) {
+                return res.status(404).send();
+            }
+
+            const removeAllowed = collection.creator._id.equals(req.user._id);
+
+            if (!removeAllowed) {
+                return res.status(401).send();
+            }
+
+            const updateCollection = await PostCollection.findOneAndUpdate(
+                { _id: collection._id, contributors: user._id },
+                {
+                    $pull: {
+                        contributors: user._id,
+                    },
+                },
+            );
+
+            if (!updateCollection) {
+                return res.status(400).send();
+            }
+
+            return res.status(200).send();
+        } catch {
+            return res.status(500).send();
+        }
+    },
+);
+
+router.get('/featured-collections', authenticate, async (req, res) => {
+    const collections = await PostCollection.find({ featured: true })
+        .populate('creator')
+        .sort({
+            featuredOn: -1,
+        });
+
+    return res.json(collections);
+});
+
+router.get('/contributors/:collectionId', authenticate, async (req, res) => {
+    const collection = await PostCollection.findById(
+        req.params.collectionId,
+    ).populate('contributors');
+
+    return res.json(collection.contributors);
+});
+
+router.put('/feature/:collectionId', authenticate, async (req, res) => {
+    const isAdmin = ['admin', 'super-admin'].includes(req.user.role);
+
+    if (!isAdmin) {
+        return res.status(401).send();
+    }
+
+    const collection = await PostCollection.findOneAndUpdate(
+        { _id: req.params.collectionId },
+        {
+            featured: true,
+            featuredOn: Date.now(),
+        },
+    );
+
+    if (collection) {
+        return res.status(200).send();
+    }
+
+    return res.status(400).send();
+});
+
+router.put('/unfeature/:collectionId', authenticate, async (req, res) => {
+    const isAdmin = ['admin', 'super-admin'].includes(req.user.role);
+
+    if (!isAdmin) {
+        return res.status(401).send();
+    }
+
+    const collection = await PostCollection.findOneAndUpdate(
+        { _id: req.params.collectionId },
+        {
+            featured: false,
+            featuredOn: null,
+        },
+    );
+
+    if (collection) {
+        return res.status(200).send();
+    }
+
+    return res.status(400).send();
+});
+
+router.get('/search/:title', authenticate, async (req, res) => {
+    const collections = await PostCollection.find({
+        username: { $regex: req.params.title.trim(), $options: 'i' },
+    });
+
+    return res.json(collections);
+});
 
 router.put('/:collectionId/:postId', authenticate, async (req, res) => {
     try {
@@ -95,12 +272,18 @@ router.put('/:collectionId/:postId', authenticate, async (req, res) => {
     }
 });
 
-router.get('/search/:title', authenticate, async (req, res) => {
-    const collections = await PostCollection.find({
-        username: { $regex: req.params.title.trim(), $options: 'i' },
+router.get('/user-collections/:username', authenticate, async (req, res) => {
+    const user = await User.findOne({
+        username: req.params.username,
+    }).populate({
+        path: 'postCollections',
+        populate: { path: 'creator', model: 'User' },
+        options: {
+            sort: { createdAt: -1 },
+        },
     });
 
-    return res.json(collections);
+    return res.json(user);
 });
 
 router.get('/:collectionId', authenticate, async (req, res) => {
@@ -117,8 +300,45 @@ router.get('/:collectionId', authenticate, async (req, res) => {
             isCreator: collection.creator.equals(req.user._id),
             isContributor: collection.contributors.includes(req.user._id),
         };
-        console.log(responseObject);
+
         return res.json(responseObject);
+    } catch {
+        return res.status(500).send();
+    }
+});
+
+router.delete('/:collectionId', authenticate, async (req, res) => {
+    const { collectionId } = req.params;
+
+    try {
+        const collection = await PostCollection.findById(collectionId).populate(
+            'creator',
+        );
+
+        if (!collection) {
+            return res.status(404).send();
+        }
+
+        const deletedAllowed =
+            collection.creator._id.equals(req.user._id) ||
+            ['admin', 'super-admin'].includes(req.user.role);
+
+        if (!deletedAllowed) {
+            return res.status(401).send();
+        }
+
+        await User.updateMany(
+            { postCollections: collectionId },
+            {
+                $pull: {
+                    postCollections: collectionId,
+                },
+            },
+        );
+
+        await PostCollection.findOneAndDelete({ _id: collectionId });
+
+        return res.status(200).send();
     } catch {
         return res.status(500).send();
     }

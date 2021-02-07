@@ -8,6 +8,7 @@ import CodePreview from '../general/CodePreview';
 import PostFunctions from './PostFunctions';
 import IconButton from '../buttons/IconButton';
 import Menu from './Menu';
+import { usePageContextValue } from '../../context/PageContext';
 
 const Container = styled.div`
     padding: 57px 68px;
@@ -90,10 +91,17 @@ const BasicContent = styled.div`
 `;
 
 const Post = ({
-    post: { title, postBody, _id, codeSandboxId, user },
-    currentUser,
+    post: { title, postBody, _id, codeSandboxId, user, favorited },
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { currentUser } = usePageContextValue();
+    const isAdmin = (userToCheck) =>
+        ['admin', 'super-admin'].includes(userToCheck.role);
+
+    const deleteAllowed = currentUser.id === user.id || isAdmin(currentUser);
+    const banAllowed =
+        (!isAdmin(user) && isAdmin(currentUser)) ||
+        (user.role === 'admin' && currentUser.role === 'super-admin');
 
     return (
         <Container>
@@ -117,38 +125,42 @@ const Post = ({
                 <RightSide>
                     <div id="title-container">
                         <h5 className="post-title">{title}</h5>
-                        <span id="menu-container">
-                            <IconButton
-                                onClick={() => setIsMenuOpen(!isMenuOpen)}
-                                type="menu"
-                            />
-                            <CSSTransition
-                                in={isMenuOpen}
-                                timeout={200}
-                                classNames="menu"
-                                unmountOnExit
-                            >
-                                <Menu
-                                    user={user}
-                                    currentUser={currentUser}
-                                    id={_id}
-                                    close={() => setIsMenuOpen(false)}
+                        {(deleteAllowed || banAllowed) && (
+                            <span id="menu-container">
+                                <IconButton
+                                    onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                    type="menu"
                                 />
-                            </CSSTransition>
-                        </span>
+                                <CSSTransition
+                                    in={isMenuOpen}
+                                    timeout={200}
+                                    classNames="menu"
+                                    unmountOnExit
+                                >
+                                    <Menu
+                                        postId={_id}
+                                        deleteAllowed={deleteAllowed}
+                                        banAllowed={banAllowed}
+                                        user={user}
+                                        currentUser={currentUser}
+                                        id={_id}
+                                        close={() => setIsMenuOpen(false)}
+                                    />
+                                </CSSTransition>
+                            </span>
+                        )}
                     </div>
                     <p className="post-body">{postBody}</p>
                 </RightSide>
             </BasicContent>
             {codeSandboxId && <CodePreview sandboxId={codeSandboxId} />}
-            <PostFunctions postId={_id} />
+            <PostFunctions favorited={favorited} postId={_id} />
         </Container>
     );
 };
 
 Post.propTypes = {
     post: PropTypes.object.isRequired,
-    currentUser: PropTypes.object.isRequired,
 };
 
 export default Post;

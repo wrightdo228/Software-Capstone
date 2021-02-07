@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import styled from 'styled-components';
 import { useEffect, useRef } from 'react';
+import { usePageContextValue } from '../../context/PageContext';
 
 const Container = styled.div`
     position: absolute;
@@ -19,6 +20,10 @@ const Container = styled.div`
         border-radius: 0;
         min-width: 100px;
         color: #000;
+
+        :hover {
+            background-color: #fffbfa;
+        }
     }
 
     .delete-button {
@@ -28,6 +33,8 @@ const Container = styled.div`
 
 const Menu = ({ close, currentUser, user, postId }) => {
     const menu = useRef(null);
+    const { posts, setPosts } = usePageContextValue();
+
     const isAdmin = (userToCheck) =>
         ['admin', 'super-admin'].includes(userToCheck.role);
 
@@ -52,6 +59,12 @@ const Menu = ({ close, currentUser, user, postId }) => {
             method: 'DELETE',
             credentials: 'include',
         });
+
+        if (response.ok) {
+            const newPosts = posts.filter((post) => post._id !== postId);
+            setPosts(newPosts);
+            close();
+        }
     };
 
     return (
@@ -65,7 +78,7 @@ const Menu = ({ close, currentUser, user, postId }) => {
                     Delete
                 </button>
             )}
-            {isAdmin && (
+            {isAdmin(currentUser) && (
                 <button
                     className="menu-button"
                     type="button"
@@ -88,8 +101,7 @@ const Menu = ({ close, currentUser, user, postId }) => {
 };
 
 Menu.propTypes = {
-    isOwnPost: PropTypes.bool.isRequired,
-    id: PropTypes.string.isRequired,
+    postId: PropTypes.string.isRequired,
     role: PropTypes.oneOf(['user', 'admin', 'super-admin']),
     close: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,

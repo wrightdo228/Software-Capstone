@@ -14,7 +14,7 @@ const getReducedUser = (user, req) => ({
     username: user.username,
     followerCount: user.followers.length,
     followingCount: user.following.length,
-    favoriteCount: user.favorites.length,
+    favorites: user.favorites,
     collectionCount: user.postCollections.length,
     avatar: user.avatar,
     ownAccount: user._id.equals(req.user._id),
@@ -122,11 +122,14 @@ router.get('/following/:username', authenticate, async (req, res) => {
 router.get('/search/:username', authenticate, async (req, res) => {
     const users = await User.find({
         username: { $regex: req.params.username.trim(), $options: 'i' },
+        _id: {
+            $ne: req.user._id,
+        },
     });
 
     const reducedUsers = users.map((user) => ({
-        id: user._id,
-        user: user.username,
+        _id: user._id,
+        username: user.username,
         avatar: user.avatar,
         status: user.status,
         role: user.role,

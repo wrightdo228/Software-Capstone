@@ -2,7 +2,6 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 import IconButton from '../buttons/IconButton';
-import Modal from '../general/Modal';
 import CollectionsModal from '../collections/CollectionsModal';
 
 const Container = styled.div`
@@ -10,8 +9,9 @@ const Container = styled.div`
     justify-content: flex-end;
 `;
 
-const PostFunctions = ({ postId }) => {
+const PostFunctions = ({ postId, favorited }) => {
     const [collectionsOpen, setCollectionsOpen] = useState(false);
+    const [isFavorited, setIsFavorited] = useState(favorited);
 
     const favorite = async () => {
         const response = await fetch('/api/post/favorite', {
@@ -26,7 +26,7 @@ const PostFunctions = ({ postId }) => {
         });
 
         if (response.ok) {
-            console.log('favorited');
+            setIsFavorited(true);
         } else {
             console.log('could not favorite');
         }
@@ -45,13 +45,18 @@ const PostFunctions = ({ postId }) => {
                 type="collection"
                 onClick={() => setCollectionsOpen(true)}
             />
-            <IconButton type="favorite" onClick={favorite} />
+            <IconButton
+                selected={isFavorited}
+                type="favorite"
+                onClick={favorite}
+            />
         </Container>
     );
 };
 
 PostFunctions.propTypes = {
     postId: PropTypes.string.isRequired,
+    favorited: PropTypes.bool.isRequired,
 };
 
 export default PostFunctions;

@@ -63,23 +63,64 @@ router.post('/', authenticate, async (req, res) => {
 });
 
 router.delete('/:postId', authenticate, async (req, res) => {
-    const { postId } = req.params;
-    const post = await Post.findById(postId).populate('user');
+    try {
+        const { postId } = req.params;
+        const post = await Post.findById(postId).populate('user');
 
-    if (!post) {
-        return req.status(404).send();
+        if (!post) {
+            return res.status(404).send();
+        }
+
+        const deleteAllowed =
+            ['admin', 'super-admin'].includes(req.user.role) ||
+            post._id.equals(req.user._id);
+
+        if (!deleteAllowed) {
+            return res.statusCode(401).send();
+        }
+
+        const favorites = await Favorite.find({ post: postId });
+        const reposts = await Repost.find({ post: postId });
+
+        await User.updateMany(
+            {
+                favorites: {
+                    $in: favorites,
+                },
+            },
+            {
+                $pull: {
+                    favorites: { $in: favorites },
+                },
+            },
+        );
+
+        await User.updateMany(
+            {
+                reposts: {
+                    $in: reposts,
+                },
+            },
+            {
+                $pull: {
+                    reposts: { $in: reposts },
+                },
+            },
+        );
+
+        await Repost.deleteMany({ post: postId });
+        await Favorite.deleteMany({ post: postId });
+        await User.findOneAndUpdate(
+            { _id: post.user._id },
+            {
+                $pull: { posts: postId },
+            },
+        );
+        await Post.findOneAndDelete({ _id: postId });
+        return res.status(200).send();
+    } catch {
+        return res.status(500).send();
     }
-
-    const deleteAllowed =
-        ['admin', 'super-admin'].includes(req.user.role) ||
-        post._id.equals(req.user._id);
-
-    if (!deleteAllowed) {
-        return req.statusCode(401).send();
-    }
-
-    await Favorite.deleteMany({ post: postId });
-    await Post.findByIdAndDelete(postId);
 });
 
 router.get('/main-feed', authenticate, async (req, res) => {
@@ -91,11 +132,20 @@ router.get('/main-feed', authenticate, async (req, res) => {
             $in: following,
         },
     })
+        .populate('favorites')
         .populate(
             'user',
-            '-posts -favorites -reposts -email -createdAt -__v -followers -following',
+            '-posts -reposts -email -createdAt -__v -followers -following',
         )
         .sort({ createdAt: -1 });
+
+    // const mappedPosts = posts.map((post) => ({
+    //     ...post,
+    //     favorited:
+    //         post.favorites.filter((favorite) =>
+    //             favorite.user.equals(req.user._id),
+    //         ).length > 0,
+    // }));
 
     res.status(200).json(posts);
 });

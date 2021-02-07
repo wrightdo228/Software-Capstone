@@ -15,7 +15,7 @@ const Container = styled.div`
     }
 `;
 
-const Timeline = ({ posts, user }) => {
+const Timeline = ({ user }) => {
     const [createPostOpen, setCreatePostOpen] = useState(false);
     return (
         <>
@@ -27,14 +27,13 @@ const Timeline = ({ posts, user }) => {
                     user={user}
                     openCreatePost={() => setCreatePostOpen(true)}
                 />
-                <Posts currentUser={user} posts={posts} />
+                <Posts currentUser={user} />
             </Container>
         </>
     );
 };
 
 Timeline.propTypes = {
-    posts: PropTypes.arrayOf(PropTypes.object).isRequired,
     user: PropTypes.object.isRequired,
 };
 

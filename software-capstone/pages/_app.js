@@ -4,7 +4,6 @@ import fetch from 'isomorphic-unfetch';
 import Layout from '../components/general/Layout';
 
 function MyApp({ Component, pageProps, currentUser }) {
-    console.log(currentUser);
     return (
         <Layout>
             <Component {...pageProps} />

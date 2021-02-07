@@ -21,10 +21,12 @@ const postSchema = new Schema({
         type: String,
         trim: true,
         required: 'Please supply a title',
+        maxlength: 100,
     },
     postBody: {
         type: String,
         required: 'Please supply a body for your post',
+        maxlength: 320,
     },
     codeSandboxId: {
         type: String,

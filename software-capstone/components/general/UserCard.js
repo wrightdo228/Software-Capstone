@@ -62,7 +62,7 @@ const UserCard = ({ openCreatePost, user }) => {
                 >
                     <a>
                         <Icon type="favorite" />
-                        <p>Favorites ({user.favoriteCount})</p>
+                        <p>Favorites ({user.favorites.length})</p>
                     </a>
                 </Link>
             </UserCardSection>

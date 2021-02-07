@@ -2,6 +2,7 @@ import styled from 'styled-components';
 import PropTypes from 'prop-types';
 import Post from './Post';
 import NoPosts from './NoPosts';
+import { usePageContextValue } from '../../context/PageContext';
 
 const Container = styled.div`
     flex-grow: 1;
@@ -16,20 +17,18 @@ const Container = styled.div`
     }
 `;
 
-const Posts = ({ posts, currentUser }) => (
-    <Container>
-        {posts.length > 0 ? (
-            posts.map((post) => (
-                <Post currentUser={currentUser} key={post._id} post={post} />
-            ))
-        ) : (
-            <NoPosts />
-        )}
-    </Container>
-);
+const Posts = () => {
+    const { posts } = usePageContextValue();
 
-Posts.propTypes = {
-    posts: PropTypes.arrayOf(PropTypes.object),
+    return (
+        <Container>
+            {posts.length > 0 ? (
+                posts.map((post) => <Post key={post._id} post={post} />)
+            ) : (
+                <NoPosts />
+            )}
+        </Container>
+    );
 };
 
 export default Posts;

@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 import Posts from '../components/posts/Posts';
+import PageContextProvider from '../context/PageContext';
 
 const Container = styled.div`
     display: flex;
@@ -18,26 +20,45 @@ const Container = styled.div`
     }
 `;
 
-const Search = ({ posts, searchParams }) => (
-    <Container>
-        <h2 className="search-title">
-            Results for <span className="search-params">"{searchParams}"</span>
-        </h2>
-        <Posts posts={posts} />
-    </Container>
-);
+const Search = ({ initialPosts, searchParams, currentUser }) => {
+    const [posts, setPosts] = useState(initialPosts);
+
+    const value = {
+        posts,
+        setPosts,
+        currentUser,
+    };
+
+    return (
+        <PageContextProvider value={value}>
+            <Container>
+                <h2 className="search-title">
+                    Results for{' '}
+                    <span className="search-params">"{searchParams}"</span>
+                </h2>
+                <Posts />
+            </Container>
+        </PageContextProvider>
+    );
+};
 
 Search.propTypes = {
-    posts: PropTypes.arrayOf(PropTypes.object),
+    initialPosts: PropTypes.arrayOf(PropTypes.object),
+    currentUser: PropTypes.object.isRequired,
     searchParams: PropTypes.string.isRequired,
 };
 
 Search.getInitialProps = async ({ query, req }) => {
-    const props = { posts: [], success: false, searchParams: '' };
+    const props = {
+        initialPosts: [],
+        success: true,
+        searchParams: '',
+        currentUser: {},
+    };
     const { searchParams } = query;
     const cookie = req ? { cookie: req.headers.cookie } : undefined;
 
-    const searchResponse = await fetch(
+    const searchResponse = fetch(
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/post/search/${searchParams}`,
         {
             credentials: 'include',
@@ -45,9 +66,25 @@ Search.getInitialProps = async ({ query, req }) => {
         },
     );
 
-    if (searchResponse.ok) {
-        props.posts = await searchResponse.json();
-        props.success = true;
+    const currentUserResponse = fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/user`,
+        {
+            credentials: 'include',
+            headers: req ? { cookie: req.headers.cookie } : undefined,
+        },
+    );
+
+    const promises = await Promise.all([searchResponse, currentUserResponse]);
+
+    promises.forEach((promise) => {
+        if (!promise.ok) {
+            props.success = false;
+        }
+    });
+
+    if (props.success) {
+        props.initialPosts = await promises[0].json();
+        props.currentUser = await promises[1].json();
         props.searchParams = searchParams ? searchParams.trim() : '';
     } else {
         console.log('failed');
