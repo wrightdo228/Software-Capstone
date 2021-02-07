@@ -5,8 +5,7 @@
   "scripts": {
     "dev": "nodemon server/app.js",
     "build": "next build",
-    "start": "next start",
-    "server": "node server/app.js"
+    "start": "node server/app.js",
   },
   "dependencies": {
     "aws-sdk": "^2.815.0",
