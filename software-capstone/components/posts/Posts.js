@@ -17,18 +17,32 @@ const Container = styled.div`
     }
 `;
 
-const Posts = () => {
+const Posts = ({ onCollectionPage, collectionId, canRemovePosts }) => {
     const { posts } = usePageContextValue();
 
     return (
         <Container>
             {posts.length > 0 ? (
-                posts.map((post) => <Post key={post._id} post={post} />)
+                posts.map((post) => (
+                    <Post
+                        canRemovePosts={canRemovePosts}
+                        onCollectionPage={onCollectionPage}
+                        collectionId={collectionId}
+                        key={post._id}
+                        post={post}
+                    />
+                ))
             ) : (
                 <NoPosts />
             )}
         </Container>
     );
+};
+
+Posts.propTypes = {
+    onCollectionPage: PropTypes.bool,
+    collectionId: PropTypes.string,
+    canRemovePosts: PropTypes.bool,
 };
 
 export default Posts;

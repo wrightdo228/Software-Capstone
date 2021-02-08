@@ -96,12 +96,12 @@ const Login = () => {
                     />
                 </label>
                 <button type="submit">Login</button>
-                <p>
+                {/* <p>
                     Forgot your password?{' '}
                     <Link href="/change-password">
                         <a className="link-text">Click here</a>
                     </Link>
-                </p>
+                </p> */}
                 <p>
                     Don’t have an account?{' '}
                     <Link href="/register">

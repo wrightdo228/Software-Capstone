@@ -14,6 +14,8 @@ const OverlayContainer = styled.div`
 
 const ModalContainer = styled.div`
     max-width: 1000px;
+    max-height: 500px;
+    overflow: auto;
     width: 100%;
     position: fixed;
     top: 50%;

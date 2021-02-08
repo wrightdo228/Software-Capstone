@@ -104,7 +104,7 @@ function Comment({ comment }) {
                     <div className="left-side">
                         <Link href="#">
                             <a>
-                                <UserAvatar />
+                                <UserAvatar avatarUrl={comment.user.avatar} />
                             </a>
                         </Link>
                     </div>
@@ -114,14 +114,14 @@ function Comment({ comment }) {
                     <Link href="#">
                         <a>{comment.user.username}</a>
                     </Link>
-                    <IconButton
+                    {/* <IconButton
                         type="reply"
                         selected={replyIsOpen}
                         onClick={() => setReplyIsOpen(!replyIsOpen)}
-                    />
+                    /> */}
                 </div>
             </div>
-            <CSSTransition
+            {/* <CSSTransition
                 in={replyIsOpen}
                 timeout={200}
                 classNames="reply"
@@ -138,7 +138,7 @@ function Comment({ comment }) {
                 {comment.replies.map((reply) => (
                     <Comment key={reply._id} comment={reply} />
                 ))}
-            </div>
+                </div> */}
         </Container>
     );
 }

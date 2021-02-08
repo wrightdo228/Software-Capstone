@@ -4,6 +4,7 @@ const { Schema } = mongoose;
 
 const Comment = new Schema({
     comment: {
+        maxlength: 240,
         type: String,
         required: 'Please supply a body for your comment',
     },

@@ -5,6 +5,26 @@ import Modal from '../general/Modal';
 
 const CollectionItem = styled.div`
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #c4c4c4;
+    margin-top: 20px;
+
+    :hover {
+        background-color: #ebe6e6;
+    }
+`;
+
+const BlurContainer = styled.div`
+    background-image: ${({ image }) =>
+        `url(${image})` ||
+        "url('https://hackernoon.com/hn-images/1*Kv-0AsHcK7WRrUDOH8YLIA.png')"};
+    height: 59px;
+    width: 100px;
+    border-radius: 10px;
+    background-size: cover;
 `;
 
 const CollectionsModal = ({ postId, open, onClose }) => {
@@ -45,9 +65,9 @@ const CollectionsModal = ({ postId, open, onClose }) => {
         );
 
         if (response.ok) {
-            console.log('successfully added');
+            onClose();
         } else {
-            console.log("couldn't add to collection");
+            alert("couldn't add, may already be a part of the collection");
         }
     };
 
@@ -62,12 +82,8 @@ const CollectionsModal = ({ postId, open, onClose }) => {
                             onClick={() => addToCollection(collection._id)}
                             key={collection._id}
                         >
-                            <img
-                                src={collection.image}
-                                alt="collection"
-                                aria-hidden
-                            />
-                            {collection.title}
+                            <BlurContainer image={collection.image} />
+                            <p>{collection.title}</p>
                         </CollectionItem>
                     ))}
                 </>

@@ -43,7 +43,7 @@ const UserInfoSection = ({
             <Link href={`/following/${username}`}>
                 <a id="following">Following {followingCount}</a>
             </Link>
-            <Link href="#">
+            <Link href={`/followers/${username}`}>
                 <a>Followers {followerCount}</a>
             </Link>
         </div>
