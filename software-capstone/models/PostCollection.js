@@ -6,10 +6,12 @@ const postCollectionSchema = new Schema({
     title: {
         type: String,
         trim: true,
+        maxlength: 100,
         required: 'Please supply a title',
     },
     description: {
         type: String,
+        maxLength: 320,
         trim: true,
         required: 'Please supply a description',
     },

@@ -63,8 +63,7 @@ Favorites.getInitialProps = async ({ req, query }) => {
         }
     });
 
-    if (postsResponse.ok) {
-        props.success = true;
+    if (props.success) {
         props.initialPosts = await promises[0].json();
         props.currentUser = await promises[1].json();
     }

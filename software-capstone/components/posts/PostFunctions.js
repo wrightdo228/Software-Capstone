@@ -32,6 +32,22 @@ const PostFunctions = ({ postId, favorited }) => {
         }
     };
 
+    const unfavorite = async () => {
+        const response = await fetch(`/api/post/favorite/${postId}`, {
+            method: 'DELETE',
+            credentials: 'include',
+            headers: {
+                'content-type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            setIsFavorited(false);
+        } else {
+            console.log('could not favorite');
+        }
+    };
+
     return (
         <Container className="post-functions">
             {collectionsOpen && (
@@ -48,7 +64,7 @@ const PostFunctions = ({ postId, favorited }) => {
             <IconButton
                 selected={isFavorited}
                 type="favorite"
-                onClick={favorite}
+                onClick={isFavorited ? unfavorite : favorite}
             />
         </Container>
     );

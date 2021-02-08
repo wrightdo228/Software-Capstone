@@ -62,82 +62,22 @@ router.post('/', authenticate, async (req, res) => {
     }
 });
 
-router.delete('/:postId', authenticate, async (req, res) => {
-    try {
-        const { postId } = req.params;
-        const post = await Post.findById(postId).populate('user');
-
-        if (!post) {
-            return res.status(404).send();
-        }
-
-        const deleteAllowed =
-            ['admin', 'super-admin'].includes(req.user.role) ||
-            post._id.equals(req.user._id);
-
-        if (!deleteAllowed) {
-            return res.statusCode(401).send();
-        }
-
-        const favorites = await Favorite.find({ post: postId });
-        const reposts = await Repost.find({ post: postId });
-
-        await User.updateMany(
-            {
-                favorites: {
-                    $in: favorites,
-                },
-            },
-            {
-                $pull: {
-                    favorites: { $in: favorites },
-                },
-            },
-        );
-
-        await User.updateMany(
-            {
-                reposts: {
-                    $in: reposts,
-                },
-            },
-            {
-                $pull: {
-                    reposts: { $in: reposts },
-                },
-            },
-        );
-
-        await Repost.deleteMany({ post: postId });
-        await Favorite.deleteMany({ post: postId });
-        await User.findOneAndUpdate(
-            { _id: post.user._id },
-            {
-                $pull: { posts: postId },
-            },
-        );
-        await Post.findOneAndDelete({ _id: postId });
-        return res.status(200).send();
-    } catch {
-        return res.status(500).send();
-    }
-});
-
 router.get('/main-feed', authenticate, async (req, res) => {
     const user = await User.findById(req.user._id);
     const following = [...user.following, user._id];
 
-    const posts = await Post.find({
+    let posts = await Post.find({
         user: {
             $in: following,
         },
     })
-        .populate('favorites')
         .populate(
             'user',
             '-posts -reposts -email -createdAt -__v -followers -following',
         )
         .sort({ createdAt: -1 });
+
+    posts = posts.filter((post) => post.user.status === 'active');
 
     // const mappedPosts = posts.map((post) => ({
     //     ...post,
@@ -152,7 +92,13 @@ router.get('/main-feed', authenticate, async (req, res) => {
 
 router.get('/user-feed/:username', authenticate, async (req, res) => {
     const { username } = req.params;
-    const user = await User.findOne({ username });
+    const user = await User.findOne({
+        username: { $regex: new RegExp(username.trim(), 'i') },
+    });
+
+    if (user.status === 'banned') {
+        return res.status(403).send();
+    }
 
     const posts = await Post.find({ user })
         .populate(
@@ -165,27 +111,37 @@ router.get('/user-feed/:username', authenticate, async (req, res) => {
 });
 
 router.get('/search/:searchParams', authenticate, async (req, res) => {
-    const { searchParams } = req.params;
-    const trimmedSearchParams = searchParams.trim();
+    try {
+        const { searchParams } = req.params;
+        const trimmedSearchParams = searchParams.trim();
 
-    const users = await User.find({
-        username: { $regex: trimmedSearchParams, $options: 'i' },
-    });
+        const users = await User.find({
+            username: { $regex: trimmedSearchParams, $options: 'i' },
+        });
 
-    const posts = await Post.find({
-        $or: [
-            { title: { $regex: trimmedSearchParams, $options: 'i' } },
-            { postBody: { $regex: trimmedSearchParams, $options: 'i' } },
-            { user: { $in: users } },
-        ],
-    })
-        .populate(
-            'user',
-            '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
-        )
-        .sort({ createdAt: -1 });
+        let posts = await Post.find({
+            $or: [
+                { title: { $regex: trimmedSearchParams, $options: 'i' } },
+                { postBody: { $regex: trimmedSearchParams, $options: 'i' } },
+                { user: { $in: users } },
+            ],
+        })
+            .populate(
+                'user',
+                '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
+            )
+            .sort({ createdAt: -1 });
 
-    res.status(200).json(posts);
+        if (!posts) {
+            return res.status(400).send();
+        }
+
+        posts = posts.filter((post) => post.user.status === 'active');
+
+        res.status(200).json(posts);
+    } catch {
+        res.status(500).send();
+    }
 });
 
 router.post('/repost', authenticate, async (req, res) => {
@@ -220,16 +176,95 @@ router.post('/favorite', authenticate, async (req, res) => {
             return res.send();
         }
 
+        const existingFavorite = await Favorite.findOne({
+            post,
+            user,
+        });
+
+        if (existingFavorite) {
+            return res.status(400).send();
+        }
+
         const newFavorite = new Favorite();
         newFavorite.post = post;
         newFavorite.user = user;
         const favorite = await newFavorite.save();
 
-        user.favorites.push(favorite);
-        await user.save();
+        await User.findOneAndUpdate(
+            { _id: user._id },
+            {
+                $push: {
+                    favorites: favorite,
+                },
+            },
+        );
+
+        await Post.findOneAndUpdate(
+            { _id: post._id },
+            {
+                $push: {
+                    favorites: favorite,
+                },
+            },
+        );
 
         res.status(200).send();
     } catch {
+        res.status(500).send();
+    }
+});
+
+router.delete('/favorite/:postId', authenticate, async (req, res, next) => {
+    try {
+        const { postId } = req.params;
+
+        const post = await Post.findById(postId);
+
+        if (!post) {
+            res.status(404).statusMessage = 'No post could be found';
+            return res.send();
+        }
+
+        const user = await User.findById(req.user._id);
+
+        if (!user) {
+            res.status(404).statusMessage = 'No user could be found';
+            return res.send();
+        }
+
+        const deletedFavorite = await Favorite.findOneAndDelete({ post, user });
+
+        if (!deletedFavorite) {
+            return res.status(404).send();
+        }
+
+        await User.findOneAndUpdate(
+            {
+                _id: user._id,
+                favorites: deletedFavorite,
+            },
+            {
+                $pull: {
+                    favorites: deletedFavorite._id,
+                },
+            },
+        );
+
+        await Post.findOneAndUpdate(
+            {
+                _id: post._id,
+                favorites: deletedFavorite,
+            },
+            {
+                $pull: {
+                    favorites: deletedFavorite._id,
+                },
+            },
+        );
+
+        res.status(200).send();
+    } catch (error) {
+        console.log(error);
         res.status(500).send();
     }
 });
@@ -238,7 +273,9 @@ router.get('/favorites/:username', authenticate, async (req, res) => {
     try {
         const { username } = req.params;
 
-        const user = await User.findOne({ username });
+        const user = await User.findOne({
+            username: { $regex: new RegExp(username.trim(), 'i') },
+        });
 
         const favorites = await Favorite.find({ user })
             .populate({
@@ -252,7 +289,9 @@ router.get('/favorites/:username', authenticate, async (req, res) => {
             })
             .sort({ createdAt: -1 });
 
-        const reducedFavorites = favorites.map((favorite) => favorite.post);
+        const reducedFavorites = favorites
+            .filter((favorite) => favorite.post.user.status === 'active')
+            .map((favorite) => favorite.post);
 
         res.status(200).json(reducedFavorites);
     } catch {
@@ -317,10 +356,14 @@ router.get('/:postId', authenticate, async (req, res) => {
                 'user',
                 '-posts -favorites -reposts -email -createdAt -__v -_id -followers -following',
             )
-            .populate('comments.user', 'username');
+            .populate('comments.user', 'username avatar');
 
         if (!post) {
             return res.status(404).send();
+        }
+
+        if (post.user.status === 'banned') {
+            return res.status(403).send();
         }
 
         res.status(200).json(post);
@@ -329,8 +372,66 @@ router.get('/:postId', authenticate, async (req, res) => {
     }
 });
 
-router.delete('/favorite', authenticate, async (req, res, next) => {});
+router.delete('/:postId', authenticate, async (req, res) => {
+    try {
+        const { postId } = req.params;
+        const post = await Post.findById(postId).populate('user');
 
-router.get('/', authenticate, async (req, res) => {});
+        if (!post) {
+            return res.status(404).send();
+        }
+
+        const deleteAllowed =
+            ['admin', 'super-admin'].includes(req.user.role) ||
+            post.user._id.equals(req.user._id);
+
+        if (!deleteAllowed) {
+            return res.status(401).send();
+        }
+
+        const favorites = await Favorite.find({ post: postId });
+        const reposts = await Repost.find({ post: postId });
+
+        await User.updateMany(
+            {
+                favorites: {
+                    $in: favorites,
+                },
+            },
+            {
+                $pull: {
+                    favorites: { $in: favorites },
+                },
+            },
+        );
+
+        await User.updateMany(
+            {
+                reposts: {
+                    $in: reposts,
+                },
+            },
+            {
+                $pull: {
+                    reposts: { $in: reposts },
+                },
+            },
+        );
+
+        await Repost.deleteMany({ post: postId });
+        await Favorite.deleteMany({ post: postId });
+        await User.findOneAndUpdate(
+            { _id: post.user._id },
+            {
+                $pull: { posts: postId },
+            },
+        );
+        await Post.findOneAndDelete({ _id: postId });
+        return res.status(200).send();
+    } catch (error) {
+        console.log(error);
+        return res.status(500).send();
+    }
+});
 
 module.exports = router;

@@ -21,6 +21,17 @@ const Container = styled.div`
     .post-functions {
         margin-top: 15px;
     }
+
+    .comments-button {
+        font-weight: 700;
+        color: #0092e4;
+        font-size: 12px;
+    }
+
+    .comment-button-container {
+        text-align: right;
+        margin-top: 10px;
+    }
 `;
 
 const LeftSide = styled.div`
@@ -91,17 +102,25 @@ const BasicContent = styled.div`
 `;
 
 const Post = ({
-    post: { title, postBody, _id, codeSandboxId, user, favorited },
+    onPostPage,
+    onCollectionPage,
+    collectionId,
+    canRemovePosts,
+    post: { title, postBody, _id, codeSandboxId, user, favorites },
 }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { currentUser } = usePageContextValue();
     const isAdmin = (userToCheck) =>
         ['admin', 'super-admin'].includes(userToCheck.role);
 
-    const deleteAllowed = currentUser.id === user.id || isAdmin(currentUser);
+    const deleteAllowed = currentUser.id === user._id || isAdmin(currentUser);
     const banAllowed =
         (!isAdmin(user) && isAdmin(currentUser)) ||
         (user.role === 'admin' && currentUser.role === 'super-admin');
+
+    const favorited =
+        currentUser.favorites.filter((favorite) => favorites.includes(favorite))
+            .length > 0;
 
     return (
         <Container>
@@ -138,12 +157,15 @@ const Post = ({
                                     unmountOnExit
                                 >
                                     <Menu
+                                        canRemovePosts={canRemovePosts}
+                                        collectionId={collectionId}
+                                        onCollectionPage={onCollectionPage}
+                                        onPostPage={onPostPage}
                                         postId={_id}
                                         deleteAllowed={deleteAllowed}
                                         banAllowed={banAllowed}
                                         user={user}
                                         currentUser={currentUser}
-                                        id={_id}
                                         close={() => setIsMenuOpen(false)}
                                     />
                                 </CSSTransition>
@@ -155,12 +177,28 @@ const Post = ({
             </BasicContent>
             {codeSandboxId && <CodePreview sandboxId={codeSandboxId} />}
             <PostFunctions favorited={favorited} postId={_id} />
+            {!onPostPage && (
+                <div className="comment-button-container">
+                    <Link href={`post/${_id}`}>
+                        <a className="comments-button">Go to Comments</a>
+                    </Link>
+                </div>
+            )}
         </Container>
     );
 };
 
+Post.defaultProps = {
+    onPostPage: false,
+    onCollectionPage: false,
+};
+
 Post.propTypes = {
     post: PropTypes.object.isRequired,
+    onPostPage: PropTypes.bool,
+    onCollectionPage: PropTypes.bool,
+    collectionId: PropTypes.string,
+    canRemovePosts: PropTypes.bool,
 };
 
 export default Post;

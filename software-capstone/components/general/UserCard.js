@@ -28,7 +28,7 @@ const Container = styled.div`
     }
 `;
 
-const UserCard = ({ openCreatePost, user }) => {
+const UserCard = ({ openCreatePost, user, followPage }) => {
     const [following, setFollowing] = useState(user.following);
 
     const followRequest = async (method) => {
@@ -55,31 +55,36 @@ const UserCard = ({ openCreatePost, user }) => {
                 username={user.username}
                 avatarUrl={user.avatar}
             />
-            <UserCardSection>
-                <Link
-                    href={`/favorites?username=${user.username}`}
-                    as={`/favorites/${user.username}`}
-                >
-                    <a>
-                        <Icon type="favorite" />
-                        <p>Favorites ({user.favorites.length})</p>
-                    </a>
-                </Link>
-            </UserCardSection>
-            <UserCardSection>
-                <Link href={`/collections/${user.username}`}>
-                    <a>
-                        <Icon type="collection" />
-                        <p>Collections ({user.collectionCount})</p>
-                    </a>
-                </Link>
-            </UserCardSection>
-            {user.ownAccount ? (
+            {!followPage && (
+                <UserCardSection>
+                    <Link
+                        href={`/favorites?username=${user.username}`}
+                        as={`/favorites/${user.username}`}
+                    >
+                        <a>
+                            <Icon type="favorite" />
+                            <p>Favorites ({user.favorites.length})</p>
+                        </a>
+                    </Link>
+                </UserCardSection>
+            )}
+            {!followPage && (
+                <UserCardSection>
+                    <Link href={`/collections/${user.username}`}>
+                        <a>
+                            <Icon type="collection" />
+                            <p>Collections ({user.collectionCount})</p>
+                        </a>
+                    </Link>
+                </UserCardSection>
+            )}
+            {user.ownAccount && !followPage && (
                 <UserCardSection onClick={openCreatePost}>
                     <Icon type="new" />
                     <p>New Post</p>
                 </UserCardSection>
-            ) : (
+            )}
+            {!user.ownAccount && (
                 <UserCardSection
                     onClick={
                         following
@@ -95,7 +100,12 @@ const UserCard = ({ openCreatePost, user }) => {
     );
 };
 
+UserCard.defaultProps = {
+    followPage: false,
+};
+
 UserCard.propTypes = {
+    followPage: PropTypes.bool,
     openCreatePost: PropTypes.func,
     user: PropTypes.object.isRequired,
 };

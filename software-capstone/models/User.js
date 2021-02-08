@@ -17,6 +17,7 @@ const userSchema = new Schema({
         type: String,
         unique: true,
         trim: true,
+        maxlength: 50,
         required: 'Please supply a username',
     },
     normalizedUsername: {

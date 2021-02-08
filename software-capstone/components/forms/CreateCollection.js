@@ -88,6 +88,7 @@ const CreateCollection = ({ onClose, open }) => {
                         required
                         id="title"
                         value={title}
+                        maxLength="100"
                         onChange={(e) => setTitle(e.target.value)}
                     />
                 </label>
@@ -97,6 +98,7 @@ const CreateCollection = ({ onClose, open }) => {
                         id="description"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
+                        maxLength="320"
                     />
                 </label>
                 {previewImage && <img src={previewImage} alt="preview" />}

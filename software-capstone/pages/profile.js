@@ -3,6 +3,17 @@ import Router from 'next/router';
 import PropTypes from 'prop-types';
 import UploadAvatar from '../components/profile/UploadAvatar';
 
+const Container = styled.div`
+    padding: 20px;
+    background-color: #fff;
+    max-width: 1000px;
+    margin: 0 auto;
+    margin-top: 40px;
+    border: 1px solid #c4c4c4;
+    border-radius: 10px;
+    box-shadow: 10px 10px 11px rgb(201 201 201 / 25%);
+`;
+
 const Profile = ({ user }) => {
     const logout = async () => {
         const response = await fetch('/api/authentication/logout', {
@@ -20,13 +31,12 @@ const Profile = ({ user }) => {
     };
 
     return (
-        <div>
+        <Container>
             <button type="button" onClick={logout}>
                 logout
             </button>
-            <input type="text" />
             <UploadAvatar avatarUrl={user.avatar} />
-        </div>
+        </Container>
     );
 };
 

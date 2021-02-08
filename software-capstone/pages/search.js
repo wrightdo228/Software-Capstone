@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import PropTypes from 'prop-types';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
 import Posts from '../components/posts/Posts';
 import PageContextProvider from '../context/PageContext';
 
@@ -22,12 +23,31 @@ const Container = styled.div`
 
 const Search = ({ initialPosts, searchParams, currentUser }) => {
     const [posts, setPosts] = useState(initialPosts);
+    const router = useRouter();
 
     const value = {
         posts,
         setPosts,
         currentUser,
     };
+
+    useEffect(() => {
+        const getPosts = async () => {
+            const response = await fetch(
+                `/api/post/search/${router.query.searchParams}`,
+                {
+                    credentials: 'include',
+                },
+            );
+
+            if (response.ok) {
+                const newPosts = await response.json();
+                setPosts(newPosts);
+            }
+        };
+
+        getPosts();
+    }, [router.query]);
 
     return (
         <PageContextProvider value={value}>

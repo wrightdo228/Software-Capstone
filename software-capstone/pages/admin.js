@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import { useRef, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import UserSearchItem from '../components/admin/UserSearchItem';
+import PageContextProvider from '../context/PageContext';
 
 const Container = styled.div`
     max-width: 1200px;
@@ -11,11 +13,9 @@ const Container = styled.div`
     border-radius: 10px;
 `;
 
-const Admin = () => {
+const Admin = ({ currentUser }) => {
     const [username, setUsername] = useState('');
     const [users, setUsers] = useState([]);
-    const [collectionName, setCollectionName] = useState('');
-    const [collections, setCollections] = useState([]);
 
     const userSearchTimer = useRef(null);
     const collectionSearchTimer = useRef(null);
@@ -60,55 +60,49 @@ const Admin = () => {
         userSearchTimer.current = setTimeout(handleSearch, 300);
     };
 
-    const handleCollectionSearch = (e) => {
-        const newCollectionName = e.target.value;
-        setCollectionName(newCollectionName);
-
-        if (collectionSearchTimer.current) {
-            clearTimeout(collectionSearchTimer.current);
-        }
-
-        const handleSearch = async () => {
-            if (newCollectionName) {
-                const response = await fetch(
-                    `/api/collection/search/${newCollectionName}`,
-                    {
-                        credentials: 'include',
-                    },
-                );
-
-                if (response.ok) {
-                    const jsonCollections = await response.json();
-                    setCollections(jsonCollections);
-                }
-            } else {
-                setCollections([]);
-            }
-        };
-
-        collectionSearchTimer.current = setTimeout(handleSearch, 300);
-    };
-
     return (
-        <Container>
-            <input onChange={handleUserSearch} value={username} type="text" />
-            <div>
-                {users.map((user) => (
-                    <UserSearchItem key={user.id} user={user} />
-                ))}
-            </div>
-            <input
-                type="text"
-                value={collectionName}
-                onChange={handleCollectionSearch}
-            />
-            <div>
-                {collections.map((collection) => (
-                    <div key={collection._id}>{collection.title}</div>
-                ))}
-            </div>
-        </Container>
+        <PageContextProvider value={{ currentUser }}>
+            <Container>
+                <label htmlFor="user-search">
+                    User Search:
+                    <input
+                        id="user-search"
+                        onChange={handleUserSearch}
+                        value={username}
+                        type="text"
+                    />
+                </label>
+                <div>
+                    {users.map((user) => (
+                        <UserSearchItem key={user._id} user={user} />
+                    ))}
+                </div>
+            </Container>
+        </PageContextProvider>
     );
+};
+
+Admin.propTypes = {
+    currentUser: PropTypes.object.isRequired,
+};
+
+Admin.getInitialProps = async ({ req }) => {
+    const props = { success: false, currentUser: {} };
+
+    const currentUserResponse = await fetch(
+        `${process.env.NEXT_PUBLIC_BASE_URL}/api/user`,
+        {
+            credentials: 'include',
+            headers: req ? { cookie: req.headers.cookie } : undefined,
+        },
+    );
+
+    if (currentUserResponse.ok) {
+        props.success = true;
+        props.currentUser = await currentUserResponse.json();
+    }
+
+    return props;
 };
 
 export default Admin;

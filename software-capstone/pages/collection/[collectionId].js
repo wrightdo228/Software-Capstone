@@ -33,15 +33,23 @@ const Container = styled.div`
 
     p {
         margin-bottom: 10px;
+        white-space: pre;
     }
 `;
 
-const Collection = ({ collection, currentUser }) => {
+const Title = styled.h2`
+    text-align: center;
+    margin-top: 20px;
+`;
+
+const Collection = ({ collection, currentUser, success }) => {
     const router = useRouter();
     const [openContributorsModal, setOpenContributorsModal] = useState(false);
     const [featured, setFeatured] = useState(collection.featured);
     const [posts, setPosts] = useState(collection.posts);
     const isCreator = currentUser.id === collection.creator._id;
+    const isContributor = collection.contributors.includes(currentUser.id);
+    const canRemovePosts = isContributor || isCreator;
     const isAdmin = ['admin', 'super-admin'].includes(currentUser.role);
 
     const value = {
@@ -98,51 +106,59 @@ const Collection = ({ collection, currentUser }) => {
                     collectionId={collection._id}
                 />
             )}
-            <Container>
-                {(isCreator || isAdmin) && (
-                    <div id="button-container">
-                        <span>
-                            {isCreator && (
-                                <button
-                                    id="manage-contributors"
-                                    type="button"
-                                    onClick={() =>
-                                        setOpenContributorsModal(
-                                            !openContributorsModal,
-                                        )
-                                    }
-                                >
-                                    Manage Contributors
-                                </button>
-                            )}
-                            {isAdmin && (
-                                <button
-                                    type="button"
-                                    onClick={
-                                        featured
-                                            ? unfeatureCollection
-                                            : featureCollection
-                                    }
-                                >
-                                    {featured
-                                        ? 'Unfeature Collection'
-                                        : 'Feature Collection'}
-                                </button>
-                            )}
-                        </span>
-                        <button
-                            id="delete-button"
-                            type="button"
-                            onClick={deleteCollection}
-                        >
-                            delete
-                        </button>
-                    </div>
-                )}
-                <h1>{collection.title}</h1>
-                <p>{collection.description}</p>
-                <Posts />
-            </Container>
+            {success ? (
+                <Container>
+                    {(isCreator || isAdmin) && (
+                        <div id="button-container">
+                            <span>
+                                {isCreator && (
+                                    <button
+                                        id="manage-contributors"
+                                        type="button"
+                                        onClick={() =>
+                                            setOpenContributorsModal(
+                                                !openContributorsModal,
+                                            )
+                                        }
+                                    >
+                                        Manage Contributors
+                                    </button>
+                                )}
+                                {isAdmin && (
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            featured
+                                                ? unfeatureCollection
+                                                : featureCollection
+                                        }
+                                    >
+                                        {featured
+                                            ? 'Unfeature Collection'
+                                            : 'Feature Collection'}
+                                    </button>
+                                )}
+                            </span>
+                            <button
+                                id="delete-button"
+                                type="button"
+                                onClick={deleteCollection}
+                            >
+                                delete
+                            </button>
+                        </div>
+                    )}
+                    <h1>{collection.title}</h1>
+                    <p>{collection.description}</p>
+                    <Posts
+                        canRemovePosts={canRemovePosts}
+                        onCollectionPage
+                        collectionId={collection._id}
+                    />
+                </Container>
+            ) : (
+                <Title>Can not access page</Title>
+            )}
         </PageContextProvider>
     );
 };
@@ -150,6 +166,7 @@ const Collection = ({ collection, currentUser }) => {
 Collection.propTypes = {
     collection: PropTypes.object.isRequired,
     currentUser: PropTypes.object.isRequired,
+    success: PropTypes.bool.isRequired,
 };
 
 Collection.getInitialProps = async ({ query, req }) => {

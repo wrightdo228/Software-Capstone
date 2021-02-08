@@ -1,9 +1,10 @@
 import styled from 'styled-components';
 import Link from 'next/link';
 import PropTypes from 'prop-types';
+import { useState } from 'react';
 import UserAvatar from '../general/UserAvatar';
-import Icon from '../buttons/Icon';
 import { usePageContextValue } from '../../context/PageContext';
+import IconButton from '../buttons/IconButton';
 
 const BlurContainer = styled.div`
     width: 100%;
@@ -67,6 +68,37 @@ const Container = styled.div`
 const FeaturedCard = ({ collection }) => {
     const { currentUser } = usePageContextValue();
     const ownCollection = collection.creator._id === currentUser.id;
+    const [favorited, setFavorited] = useState(
+        currentUser.postCollections.includes(collection._id),
+    );
+
+    const addToCollections = async () => {
+        const response = await fetch(
+            `/api/collection/add-favorite/${collection._id}`,
+            {
+                method: 'PUT',
+                credentials: 'include',
+            },
+        );
+
+        if (response.ok) {
+            setFavorited(true);
+        }
+    };
+
+    const removeFromCollections = async () => {
+        const response = await fetch(
+            `/api/collection/remove-favorite/${collection._id}`,
+            {
+                method: 'PUT',
+                credentials: 'include',
+            },
+        );
+
+        if (response.ok) {
+            setFavorited(false);
+        }
+    };
 
     return (
         <Container>
@@ -94,7 +126,13 @@ const FeaturedCard = ({ collection }) => {
             </div>
             {!ownCollection && (
                 <div className="favorite-content">
-                    <Icon type="favorite" />
+                    <IconButton
+                        onClick={
+                            favorited ? removeFromCollections : addToCollections
+                        }
+                        selected={favorited}
+                        type="favorite"
+                    />
                 </div>
             )}
         </Container>

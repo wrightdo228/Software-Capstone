@@ -1,9 +1,15 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
+import styled from 'styled-components';
 import Timeline from '../components/posts/Timeline';
 import PageContextProvider from '../context/PageContext';
 
-const User = ({ user, initialPosts, currentUser }) => {
+const Title = styled.h2`
+    text-align: center;
+    margin-top: 20px;
+`;
+
+const User = ({ user, initialPosts, currentUser, success }) => {
     const [posts, setPosts] = useState(initialPosts);
 
     const value = {
@@ -14,9 +20,13 @@ const User = ({ user, initialPosts, currentUser }) => {
 
     return (
         <PageContextProvider value={value}>
-            <div>
-                <Timeline user={user} posts={posts} />
-            </div>
+            {success ? (
+                <div>
+                    <Timeline user={user} posts={posts} />
+                </div>
+            ) : (
+                <Title>Cannot access page</Title>
+            )}
         </PageContextProvider>
     );
 };
@@ -25,6 +35,7 @@ User.propTypes = {
     user: PropTypes.object.isRequired,
     initialPosts: PropTypes.array.isRequired,
     currentUser: PropTypes.object.isRequired,
+    success: PropTypes.bool.isRequired,
 };
 
 User.getInitialProps = async ({ query, req }) => {
@@ -34,6 +45,7 @@ User.getInitialProps = async ({ query, req }) => {
         currentUser: {},
         initialPosts: [],
     };
+
     const cookie = req ? { cookie: req.headers.cookie } : undefined;
 
     const userResponse = fetch(
@@ -56,7 +68,7 @@ User.getInitialProps = async ({ query, req }) => {
         `${process.env.NEXT_PUBLIC_BASE_URL}/api/user`,
         {
             credentials: 'include',
-            headers: req ? { cookie: req.headers.cookie } : undefined,
+            headers: cookie,
         },
     );
 
@@ -79,11 +91,6 @@ User.getInitialProps = async ({ query, req }) => {
     }
 
     return props;
-};
-
-User.propTypes = {
-    user: PropTypes.object.isRequired,
-    initialPosts: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
 
 export default User;

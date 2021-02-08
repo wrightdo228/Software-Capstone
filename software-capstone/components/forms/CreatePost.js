@@ -2,6 +2,7 @@ import PropTypes from 'prop-types';
 import { useState } from 'react';
 import styled from 'styled-components';
 import Modal from '../general/Modal';
+import { usePageContextValue } from '../../context/PageContext';
 
 const Form = styled.form`
     label {
@@ -43,6 +44,7 @@ const CreatePost = ({ onClose, open }) => {
     const [title, setTitle] = useState('');
     const [postBody, setPostBody] = useState('');
     const [sandboxLink, setSandboxLink] = useState('');
+    const { posts, setPosts } = usePageContextValue();
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -61,6 +63,8 @@ const CreatePost = ({ onClose, open }) => {
         });
 
         if (response.ok) {
+            const newPost = await response.json();
+            setPosts([newPost, ...posts]);
             onClose();
         } else {
             console.log('fail...');
@@ -77,6 +81,7 @@ const CreatePost = ({ onClose, open }) => {
                         id="title"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
+                        maxLength="100"
                     />
                 </label>
                 <label htmlFor="body">
@@ -84,8 +89,8 @@ const CreatePost = ({ onClose, open }) => {
                     <textarea
                         value={postBody}
                         onChange={(e) => setPostBody(e.target.value)}
+                        maxLength="320"
                     />
-                    {/* <TextEditor setBodyHtml={setBodyHtml} /> */}
                 </label>
                 <BottomContainer>
                     <input

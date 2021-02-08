@@ -52,18 +52,23 @@ const Container = styled.div`
 
 const Navbar = () => {
     const router = useRouter();
-    const [searchValue, setSearchValue] = useState();
+    const [searchValue, setSearchValue] = useState('');
+    const excludeSearchBar = ['/login', '/_error', '/register'].includes(
+        router.pathname,
+    );
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        router.push(
-            `/search?searchParams=${searchValue}`,
-            `/search/${searchValue}`,
-        );
+        if (searchValue.trim()) {
+            router.push(
+                `/search?searchParams=${searchValue}`,
+                `/search/${searchValue}`,
+            );
+        }
     };
 
-    return (
+    return excludeSearchBar ? null : (
         <Container>
             <div id="content">
                 <div id="left-placeholder" />
